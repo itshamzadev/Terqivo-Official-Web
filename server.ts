@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import { createServer as createViteServer } from 'vite';
@@ -27,7 +28,8 @@ if (process.env.NODE_ENV === 'production') {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const parsedPort = Number(process.env.PORT);
+  const PORT = isNaN(parsedPort) || parsedPort === 0 ? 3000 : parsedPort;
 
   // Trust the reverse proxy
   app.set('trust proxy', 1);
@@ -38,6 +40,7 @@ async function startServer() {
     crossOriginEmbedderPolicy: false
   }));
   app.use(mongoSanitize());
+  app.use(compression());
   
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -50,8 +53,26 @@ async function startServer() {
   });
   app.use('/api/', apiLimiter);
 
+  const allowedOrigins = process.env.CLIENT_URL 
+    ? process.env.CLIENT_URL.split(',').map(url => url.trim()).filter(Boolean)
+    : [];
+
   app.use(cors({
-    origin: process.env.CLIENT_URL || true,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      
+      if (process.env.NODE_ENV !== 'production') {
+         if (/^http:\/\/localhost:\d+$/.test(origin) || origin.includes('.run.app')) {
+           return callback(null, true);
+         }
+      }
+
+      if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS: ' + origin));
+      }
+    },
     credentials: true,
   }));
   app.use(express.json({ limit: '10mb' }));
@@ -63,7 +84,7 @@ async function startServer() {
       const mongoUri = process.env.MONGODB_URI;
       if (!mongoUri) {
         console.warn('\n⚠️  WARNING: MONGODB_URI is not defined.');
-        console.warn('⚠️  Please set the MONGODB_URI environment variable to connect to MongoDB Atlas.');
+        console.warn('⚠️  Please set the MONGODB_URI environment variable to connect to MongoDB.');
         return;
       }
       await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
@@ -141,8 +162,19 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
+    app.use(express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (filePath.includes('/assets/')) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        } else if (filePath.endsWith('index.html')) {
+          res.setHeader('Cache-Control', 'no-cache');
+        } else {
+          res.setHeader('Cache-Control', 'public, max-age=3600');
+        }
+      }
+    }));
+    app.get('*', (req, res) => {
+      res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
