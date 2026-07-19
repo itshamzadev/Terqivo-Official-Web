@@ -57,38 +57,26 @@ async function startServer() {
   });
   app.use("/api/", apiLimiter);
 
-  const allowedOrigins = process.env.CLIENT_URL
-    ? process.env.CLIENT_URL.split(",")
-        .map((url) => url.trim())
-        .filter(Boolean)
-    : [];
+  const allowedOrigins = (process.env.CLIENT_URL || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
   app.use(
     cors({
-      origin: function (origin, callback) {
+      origin(origin, callback) {
         if (!origin) return callback(null, true);
 
-        if (process.env.NODE_ENV !== "production") {
-          if (
-            /^http:\/\/localhost:\d+$/.test(origin) ||
-            origin.includes(".run.app")
-          ) {
-            return callback(null, true);
-          }
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
         }
 
-        if (
-          allowedOrigins.indexOf(origin) !== -1 ||
-          allowedOrigins.includes("*")
-        ) {
-          callback(null, true);
-        } else {
-          callback(new Error("Not allowed by CORS: " + origin));
-        }
+        return callback(new Error(`Not allowed by CORS: ${origin}`));
       },
       credentials: true,
     }),
   );
+
   app.use(express.json({ limit: "10mb" }));
   app.use(cookieParser());
 
