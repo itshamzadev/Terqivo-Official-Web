@@ -180,7 +180,13 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.resolve(process.cwd(), "dist");
-
+    app.use(
+      "/downloads",
+      express.static("/app/public/downloads", {
+        fallthrough: false,
+        maxAge: "1d",
+      }),
+    );
     app.use(
       "/assets",
       express.static(path.join(distPath, "assets"), {
