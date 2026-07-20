@@ -9,3 +9,5 @@ coverage/
 !.env.example
 client/.env
 server/.env
+
+public/downloads/*.exe
