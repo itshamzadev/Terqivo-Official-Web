@@ -13,10 +13,23 @@ interface Job {
   workType: string;
   experienceLevel: string;
   description: string;
-  responsibilities: string;
-  requirements: string;
-  status: string;
+  responsibilities?: string | string[];
+  requirements?: string | string[];
+  status?: 'open' | 'closed';
 }
+
+const toMultilineText = (value?: string | string[]) => {
+  if (Array.isArray(value)) return value.join('\n');
+  return value || '';
+};
+
+const toList = (value: string) =>
+  value
+    .split(/\r?\n/)
+    .map(line => line.trim().replace(/^[-*•]\s*/, ''))
+    .filter(Boolean);
+
+const getJobStatus = (job: Job): 'open' | 'closed' => job.status === 'closed' ? 'closed' : 'open';
 
 export default function AdminJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -30,9 +43,9 @@ export default function AdminJobs() {
   const itemsPerPage = 10;
 
   const filteredJobs = jobs.filter(j => 
-    j.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    j.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    j.location.toLowerCase().includes(searchQuery.toLowerCase())
+    (j.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (j.department || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (j.location || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   const totalPages = Math.ceil(filteredJobs.length / itemsPerPage) || 1;
@@ -60,8 +73,12 @@ export default function AdminJobs() {
     setLoading(true);
     try {
       const res = await apiFetch('/api/admin/jobs');
-      if (res.ok) setJobs(await res.json());
-      else toast.error('Failed to load jobs');
+      if (res.ok) {
+        const data = await res.json();
+        setJobs(Array.isArray(data) ? data : []);
+      } else {
+        toast.error('Failed to load jobs');
+      }
     } catch (err) {
       console.error(err);
       toast.error('Network error loading jobs');
@@ -93,9 +110,9 @@ export default function AdminJobs() {
       workType: j.workType,
       experienceLevel: j.experienceLevel,
       description: j.description || '',
-      responsibilities: j.responsibilities || '',
-      requirements: j.requirements || '',
-      status: j.status || 'open'
+      responsibilities: toMultilineText(j.responsibilities),
+      requirements: toMultilineText(j.requirements),
+      status: getJobStatus(j)
     });
     setEditingId(j._id);
     setIsModalOpen(true);
@@ -124,17 +141,23 @@ export default function AdminJobs() {
     try {
       const url = editingId ? `/api/admin/jobs/${editingId}` : '/api/admin/jobs';
       const method = editingId ? 'PUT' : 'POST';
+      const payload = {
+        ...formData,
+        responsibilities: toList(formData.responsibilities),
+        requirements: toList(formData.requirements)
+      };
       const res = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         setIsModalOpen(false);
         fetchJobs();
         toast.success(editingId ? 'Job updated successfully' : 'Job added successfully', { id: toastId });
       } else {
-        toast.error('Failed to save job', { id: toastId });
+        const errorBody = await res.json().catch(() => null);
+        toast.error(errorBody?.error || 'Failed to save job', { id: toastId });
       }
     } catch (err) {
       console.error(err);
@@ -211,8 +234,8 @@ export default function AdminJobs() {
                     <td className="px-8 py-5 font-medium text-foreground">{j.title}</td>
                     <td className="px-8 py-5 text-muted-foreground">{j.department}</td>
                     <td className="px-8 py-5">
-                      <span className={`px-3 py-1 rounded-md text-xs font-medium border ${j.status === 'open' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border/50'}`}>
-                        {j.status.charAt(0).toUpperCase() + j.status.slice(1)}
+                      <span className={`px-3 py-1 rounded-md text-xs font-medium border ${getJobStatus(j) === 'open' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border/50'}`}>
+                        {getJobStatus(j).charAt(0).toUpperCase() + getJobStatus(j).slice(1)}
                       </span>
                     </td>
                     <td className="px-8 py-5">

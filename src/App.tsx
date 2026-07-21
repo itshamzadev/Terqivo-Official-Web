@@ -81,6 +81,8 @@ export default function App() {
                 <Route path="courses/:slug" element={<CourseDetailsPage />} />
                 <Route path="jobs" element={<JobsPage />} />
                 <Route path="jobs/:slug" element={<JobDetailsPage />} />
+                <Route path="careers" element={<JobsPage />} />
+                <Route path="careers/:slug" element={<JobDetailsPage />} />
                 <Route path="blog" element={<BlogPage />} />
                 <Route path="blog/:slug" element={<BlogDetailsPage />} />
                 <Route path="contact" element={<ContactPage />} />

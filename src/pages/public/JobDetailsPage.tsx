@@ -18,6 +18,16 @@ const applicationSchema = z.object({
 
 type ApplicationFormData = z.infer<typeof applicationSchema>;
 
+const formatList = (value?: string | string[]) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+
+  return value
+    .split(/\r?\n/)
+    .map(item => item.trim().replace(/^[-*•]\s*/, ''))
+    .filter(Boolean);
+};
+
 export default function JobDetailsPage() {
   const { slug } = useParams();
   const [job, setJob] = useState<any>(null);
@@ -71,7 +81,7 @@ export default function JobDetailsPage() {
       <div className="py-32 text-center flex flex-col items-center justify-center min-h-[60vh]">
         <h2 className="text-3xl font-medium mb-4">Job Not Found</h2>
         <p className="text-muted-foreground mb-8">The position you're looking for doesn't exist or has been closed.</p>
-        <Link to="/careers" className="text-primary hover:underline inline-flex items-center gap-2">
+        <Link to="/jobs" className="text-primary hover:underline inline-flex items-center gap-2">
           <ArrowLeft size={16} /> Back to Careers
         </Link>
       </div>
@@ -83,7 +93,7 @@ export default function JobDetailsPage() {
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-        <Link to="/careers" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-10 group">
+        <Link to="/jobs" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-10 group">
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Careers
         </Link>
 
@@ -122,12 +132,34 @@ export default function JobDetailsPage() {
 
               <div className="prose prose-invert prose-lg max-w-none text-muted-foreground">
                 <h3 className="text-2xl font-semibold text-foreground mb-6 tracking-tight">Responsibilities</h3>
-                <p className="whitespace-pre-wrap leading-relaxed">{job.responsibilities}</p>
+                <ul className="space-y-3 leading-relaxed">
+                  {formatList(job.responsibilities).length > 0 ? (
+                    formatList(job.responsibilities).map((item: string, index: number) => (
+                      <li key={`${item}-${index}`} className="flex gap-3">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-primary shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="whitespace-pre-wrap">{String(job.responsibilities || '')}</li>
+                  )}
+                </ul>
               </div>
 
               <div className="prose prose-invert prose-lg max-w-none text-muted-foreground">
                 <h3 className="text-2xl font-semibold text-foreground mb-6 tracking-tight">Requirements</h3>
-                <p className="whitespace-pre-wrap leading-relaxed">{job.requirements}</p>
+                <ul className="space-y-3 leading-relaxed">
+                  {formatList(job.requirements).length > 0 ? (
+                    formatList(job.requirements).map((item: string, index: number) => (
+                      <li key={`${item}-${index}`} className="flex gap-3">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-primary shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="whitespace-pre-wrap">{String(job.requirements || '')}</li>
+                  )}
+                </ul>
               </div>
             </div>
           </motion.div>

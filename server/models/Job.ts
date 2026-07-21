@@ -5,7 +5,7 @@ const jobSchema = new Schema({
   slug: { type: String, required: true, unique: true },
   department: { type: String },
   location: { type: String },
-  workType: { type: String, enum: ['Full-time', 'Part-time', 'Contract', 'Internship'] },
+  workType: { type: String },
   experienceLevel: { type: String },
   description: { type: String, required: true },
   responsibilities: [{ type: String }],

@@ -11,6 +11,14 @@ const isVisibleCourse = (course: any) => {
   return course.enrollmentStatus !== 'closed';
 };
 
+const isOpenJob = (job: any) => {
+  if (job.status === 'open') return true;
+  if (job.status === 'closed') return false;
+
+  // Treat older records without an explicit status as open so legacy jobs do not disappear.
+  return true;
+};
+
 router.get('/services', async (req, res) => {
   try {
     const services = await Service.find({ status: 'active' });
@@ -110,8 +118,8 @@ router.post('/enroll', async (req, res) => {
 
 router.get('/jobs', async (req, res) => {
   try {
-    const jobs = await Job.find({ status: 'open' }).sort({ createdAt: -1 });
-    res.json(jobs);
+    const jobs = await Job.find().sort({ createdAt: -1 });
+    res.json(jobs.filter(isOpenJob));
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
@@ -119,8 +127,8 @@ router.get('/jobs', async (req, res) => {
 
 router.get('/jobs/:slug', async (req, res) => {
   try {
-    const job = await Job.findOne({ slug: req.params.slug, status: 'open' });
-    if (!job) return res.status(404).json({ error: 'Not found' });
+    const job = await Job.findOne({ slug: req.params.slug });
+    if (!job || !isOpenJob(job)) return res.status(404).json({ error: 'Not found' });
     res.json(job);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });

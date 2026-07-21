@@ -37,7 +37,11 @@ export default function JobsPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
     apiFetch('/api/public/jobs')
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      })
       .then(data => setJobs(data))
       .catch(console.error)
       .finally(() => setLoading(false));
