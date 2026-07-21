@@ -8,6 +8,7 @@ const navLinks = [
   { title: 'Services', path: '/services' },
   { title: 'Products', path: '/products' },
   { title: 'Courses', path: '/courses' },
+  { title: 'Jobs', path: '/jobs' },
   { title: 'Company', path: '/about' },
 ];
 
