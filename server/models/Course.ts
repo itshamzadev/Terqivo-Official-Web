@@ -13,8 +13,10 @@ const courseSchema = new Schema({
   features: [{ type: String }],
   price: { type: Number },
   salePrice: { type: Number },
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   enrollmentStatus: { type: String, enum: ['open', 'closed'], default: 'open' },
   whatsappContact: { type: String },
+  featured: { type: Boolean, default: false },
   isFeatured: { type: Boolean, default: false }
 }, { timestamps: true });
 

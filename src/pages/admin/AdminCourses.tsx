@@ -10,13 +10,25 @@ interface Course {
   slug: string;
   category: string;
   level: string;
-  status: string;
+  status?: 'active' | 'inactive';
+  enrollmentStatus?: 'open' | 'closed';
   summary?: string;
   description?: string;
   price?: number;
   duration?: string;
   featured?: boolean;
+  isFeatured?: boolean;
 }
+
+const getCourseStatus = (course: Course): 'active' | 'inactive' => {
+  if (course.status === 'active' || course.status === 'inactive') {
+    return course.status;
+  }
+
+  return course.enrollmentStatus === 'closed' ? 'inactive' : 'active';
+};
+
+const getCourseFeatured = (course: Course) => course.featured ?? course.isFeatured ?? false;
 
 export default function AdminCourses() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -30,8 +42,8 @@ export default function AdminCourses() {
   const itemsPerPage = 10;
 
   const filteredCourses = courses.filter(c => 
-    c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    c.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (c.category || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage) || 1;
@@ -59,8 +71,12 @@ export default function AdminCourses() {
     setLoading(true);
     try {
       const res = await apiFetch('/api/admin/courses');
-      if (res.ok) setCourses(await res.json());
-      else toast.error('Failed to load courses');
+      if (res.ok) {
+        const data = await res.json();
+        setCourses(Array.isArray(data) ? data : []);
+      } else {
+        toast.error('Failed to load courses');
+      }
     } catch (err) {
       console.error(err);
       toast.error('Network error loading courses');
@@ -92,8 +108,8 @@ export default function AdminCourses() {
       description: c.description || '',
       price: c.price || 0,
       duration: c.duration || '',
-      featured: c.featured || false,
-      status: c.status || 'active'
+      featured: getCourseFeatured(c),
+      status: getCourseStatus(c)
     });
     setEditingId(c._id);
     setIsModalOpen(true);
@@ -204,27 +220,31 @@ export default function AdminCourses() {
                   </td>
                 </tr>
               ) : (
-                displayedCourses.map(c => (
-                  <tr key={c._id} className="hover:bg-secondary/30 transition-colors group">
-                    <td className="px-8 py-5 font-medium text-foreground">{c.title}</td>
-                    <td className="px-8 py-5 text-muted-foreground">{c.category}</td>
-                    <td className="px-8 py-5">
-                      <span className={`px-3 py-1 rounded-md text-xs font-medium border ${c.status === 'active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border/50'}`}>
-                        {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-4 opacity-70 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEdit(c)} className="text-muted-foreground hover:text-primary transition-colors hover:scale-110 active:scale-95">
-                          <Edit size={18} />
-                        </button>
-                        <button onClick={() => handleDelete(c._id)} className="text-muted-foreground hover:text-destructive transition-colors hover:scale-110 active:scale-95">
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                displayedCourses.map(c => {
+                  const courseStatus = getCourseStatus(c);
+
+                  return (
+                    <tr key={c._id} className="hover:bg-secondary/30 transition-colors group">
+                      <td className="px-8 py-5 font-medium text-foreground">{c.title}</td>
+                      <td className="px-8 py-5 text-muted-foreground">{c.category}</td>
+                      <td className="px-8 py-5">
+                        <span className={`px-3 py-1 rounded-md text-xs font-medium border ${courseStatus === 'active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border/50'}`}>
+                          {courseStatus.charAt(0).toUpperCase() + courseStatus.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-4 opacity-70 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => openEdit(c)} className="text-muted-foreground hover:text-primary transition-colors hover:scale-110 active:scale-95">
+                            <Edit size={18} />
+                          </button>
+                          <button onClick={() => handleDelete(c._id)} className="text-muted-foreground hover:text-destructive transition-colors hover:scale-110 active:scale-95">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

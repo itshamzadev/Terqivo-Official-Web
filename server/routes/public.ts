@@ -3,6 +3,14 @@ import { Service, Product, Course, Job, BlogPost, ContactMessage } from '../mode
 
 const router = express.Router();
 
+const isVisibleCourse = (course: any) => {
+  if (course.status === 'active') return true;
+  if (course.status === 'inactive') return false;
+
+  // Backward compatibility for older course documents that never stored `status`.
+  return course.enrollmentStatus !== 'closed';
+};
+
 router.get('/services', async (req, res) => {
   try {
     const services = await Service.find({ status: 'active' });
@@ -62,8 +70,8 @@ router.get('/blog/:slug', async (req, res) => {
 
 router.get('/courses', async (req, res) => {
   try {
-    const courses = await Course.find({ status: 'active' }).sort({ createdAt: -1 });
-    res.json(courses);
+    const courses = await Course.find().sort({ createdAt: -1 });
+    res.json(courses.filter(isVisibleCourse));
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
@@ -71,8 +79,8 @@ router.get('/courses', async (req, res) => {
 
 router.get('/courses/:slug', async (req, res) => {
   try {
-    const course = await Course.findOne({ slug: req.params.slug, status: 'active' });
-    if (!course) return res.status(404).json({ error: 'Not found' });
+    const course = await Course.findOne({ slug: req.params.slug });
+    if (!course || !isVisibleCourse(course)) return res.status(404).json({ error: 'Not found' });
     res.json(course);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
