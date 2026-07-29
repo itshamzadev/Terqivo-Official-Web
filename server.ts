@@ -36,13 +36,16 @@ async function startServer() {
   // Trust the reverse proxy
   app.set("trust proxy", 1);
 
-  // Security Middlewares
-  app.use(
-    helmet({
-      contentSecurityPolicy: false,
-      crossOriginEmbedderPolicy: false,
-    }),
-  );
+  // Security middleware. Helmet is production-only because its default
+  // cross-origin headers can interfere with Vite's development client/HMR.
+  if (process.env.NODE_ENV === "production") {
+    app.use(
+      helmet({
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+      }),
+    );
+  }
   app.use(mongoSanitize());
   app.use(compression());
 

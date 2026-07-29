@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import React, { Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Loader2 } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -55,6 +56,7 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
         <SettingsProvider>
+          <ThemeProvider>
           <Toaster 
             position="top-center" 
             toastOptions={{ 
@@ -110,6 +112,7 @@ export default function App() {
             </Routes>
           </Suspense>
         </BrowserRouter>
+          </ThemeProvider>
       </SettingsProvider>
     </AuthProvider>
     </ErrorBoundary>

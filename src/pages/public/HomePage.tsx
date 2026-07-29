@@ -1,340 +1,357 @@
-import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Terminal, Cpu, Globe, ArrowUpRight } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Bot,
+  CheckCircle2,
+  Cloud,
+  Code2,
+  Cpu,
+  Database,
+  Layers3,
+  ShieldCheck,
+  Sparkles,
+  TerminalSquare,
+  Zap,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import { useSettings } from "../../context/SettingsContext";
 import SEO from "../../components/SEO";
+import { HeroScene } from "../../components/3d/HeroScene";
+import { useSettings } from "../../context/SettingsContext";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
-  },
+const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
+const reveal = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease } },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-    },
+const services = [
+  {
+    icon: Code2,
+    number: "01",
+    title: "Software Engineering",
+    description:
+      "High-performance web, desktop and mobile systems engineered for real-world scale.",
+    tags: ["React", "Node.js", "APIs"],
   },
-};
+  {
+    icon: Bot,
+    number: "02",
+    title: "AI & Intelligent Systems",
+    description:
+      "AI assistants, automation, agents and LLM-powered workflows built around your business.",
+    tags: ["Agents", "LLMs", "Automation"],
+  },
+  {
+    icon: Cloud,
+    number: "03",
+    title: "Cloud & Infrastructure",
+    description:
+      "Secure cloud architecture, deployments and production infrastructure designed to grow.",
+    tags: ["Cloud", "DevOps", "Security"],
+  },
+];
+
+const strengths = [
+  { icon: Zap, title: "Built for speed", text: "Fast interfaces and efficient systems." },
+  { icon: ShieldCheck, title: "Secure by design", text: "Security considered from day one." },
+  { icon: Layers3, title: "Ready to scale", text: "Architecture that grows with you." },
+  { icon: Sparkles, title: "Crafted experience", text: "Every interaction feels intentional." },
+];
 
 export default function HomePage() {
   const { general } = useSettings();
 
   return (
-    <div className="flex flex-col bg-background selection:bg-primary selection:text-primary-foreground overflow-hidden">
+    <div className="home-page bg-background text-foreground overflow-hidden">
       <SEO
         title={general?.companyName || "TERQIVO"}
         description={general?.description}
       />
-      {/* Hero Section */}
-      <section className="relative min-h-[95vh] flex flex-col justify-center pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden border-b border-border/30">
-        {/* Background Gradients */}
-        <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-primary/5 blur-[150px] rounded-full pointer-events-none translate-x-1/3 -translate-y-1/4" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[500px] bg-primary/5 blur-[150px] rounded-full pointer-events-none -translate-x-1/4 translate-y-1/3" />
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="max-w-5xl"
-          >
+      <section className="hero-shell relative min-h-[760px] h-[100svh] max-h-[980px] flex items-center overflow-hidden border-b border-white/[0.07]">
+        <div className="absolute inset-0 pointer-events-none">
+          <HeroScene />
+          <div className="absolute inset-0 hero-vignette" />
+          <div className="absolute inset-0 hero-grid" />
+          <div className="absolute left-[8%] top-[17%] w-72 h-72 rounded-full bg-primary/10 blur-[120px]" />
+          <div className="absolute right-[5%] bottom-[5%] w-96 h-96 rounded-full bg-primary/10 blur-[150px]" />
+        </div>
+
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-16 pt-28 pb-16 relative z-10 w-full">
+          <div className="grid lg:grid-cols-[1.12fr_.88fr] gap-12 xl:gap-20 items-center">
             <motion.div
-              variants={itemVariants}
-              className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-border/60 bg-secondary/80 backdrop-blur-md text-xs font-medium text-foreground mb-10 shadow-sm"
+              initial="hidden"
+              animate="visible"
+              transition={{ staggerChildren: 0.1 }}
+              className="max-w-4xl"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              Engineering the future
-            </motion.div>
+              <motion.div variants={reveal} className="hero-eyebrow mb-8">
+                <span className="hero-eyebrow-dot" />
+                TECHNOLOGY, ENGINEERED FOR TOMORROW
+              </motion.div>
 
-            <motion.h1
-              variants={itemVariants}
-              className="text-6xl md:text-8xl lg:text-[10rem] font-semibold tracking-tighter leading-[0.95] mb-10 text-foreground"
-            >
-              <>
-                We build <br className="hidden md:block" />
-                <span className="text-muted-foreground/80">the future.</span>
-              </>
-            </motion.h1>
+              <motion.h1
+                variants={reveal}
+                className="text-[clamp(4.1rem,9.5vw,9.2rem)] font-semibold tracking-[-0.072em] leading-[0.82] mb-9"
+              >
+                We build
+                <span className="block hero-outline-text">what&apos;s next.</span>
+              </motion.h1>
 
-            <motion.div variants={itemVariants}>
-              <p className="text-xl md:text-3xl text-muted-foreground max-w-3xl mb-14 leading-relaxed font-light">
+              <motion.p
+                variants={reveal}
+                className="text-base md:text-xl text-white/58 leading-relaxed max-w-2xl mb-10"
+              >
                 {general?.description ||
-                  "TERQIVO is a technology company specializing in custom software architecture, artificial intelligence, and enterprise cloud solutions."}
-              </p>
+                  "Terqivo engineers intelligent software, AI systems and digital products that turn ambitious ideas into powerful technology."}
+              </motion.p>
+
+              <motion.div
+                variants={reveal}
+                className="flex flex-col sm:flex-row gap-4 mb-12"
+              >
+                <Link to="/contact" className="hero-primary-button group">
+                  Start your project
+                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                </Link>
+                <Link to="/products" className="hero-secondary-button group">
+                  Explore products
+                  <ArrowUpRight size={17} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </Link>
+              </motion.div>
+
+              <motion.div variants={reveal} className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/42">
+                {["Custom software", "AI products", "Enterprise systems"].map((item) => (
+                  <span key={item} className="inline-flex items-center gap-2">
+                    <CheckCircle2 size={15} className="text-primary" /> {item}
+                  </span>
+                ))}
+              </motion.div>
             </motion.div>
 
             <motion.div
-              variants={itemVariants}
-              className="flex flex-col sm:flex-row items-start sm:items-center gap-5"
+              initial={{ opacity: 0, x: 50, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.9, delay: 0.25, ease }}
+              className="hidden lg:block relative"
             >
-              <Link
-                to="/contact"
-                className="group px-9 py-4 bg-primary text-primary-foreground rounded-full font-medium text-[15px] transition-all duration-300 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_35px_rgba(220,38,38,0.5)] flex items-center gap-2.5 active:scale-95"
-              >
-                Start a project
-                <motion.span className="inline-block transition-transform duration-300 group-hover:translate-x-1.5">
-                  <ArrowRight size={18} />
-                </motion.span>
-              </Link>
-              <Link
-                to="/services"
-                className="px-9 py-4 bg-transparent border border-border/80 text-foreground rounded-full font-medium text-[15px] hover:bg-secondary transition-all hover:border-border duration-300 active:scale-95"
-              >
-                Explore our services
-              </Link>
+              <div className="hero-console relative ml-auto max-w-[520px]">
+                <div className="hero-console-top">
+                  <div className="flex gap-2">
+                    <span /><span /><span />
+                  </div>
+                  <span className="text-[10px] tracking-[0.24em] text-white/35">TERQIVO / SYSTEM</span>
+                  <div className="w-10" />
+                </div>
+                <div className="p-7 xl:p-9">
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <p className="text-xs text-white/35 tracking-[0.18em] mb-2">DIGITAL CORE</p>
+                      <h3 className="text-2xl font-medium tracking-tight">Future-ready systems</h3>
+                    </div>
+                    <div className="relative w-12 h-12 rounded-2xl border border-primary/30 bg-primary/10 flex items-center justify-center">
+                      <Cpu size={22} className="text-primary" />
+                      <span className="absolute inset-0 rounded-2xl animate-ping border border-primary/15" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {[
+                      { icon: TerminalSquare, label: "Software architecture", value: "ACTIVE", percent: 92 },
+                      { icon: Bot, label: "AI intelligence layer", value: "ONLINE", percent: 84 },
+                      { icon: Database, label: "Cloud data systems", value: "SYNCED", percent: 96 },
+                    ].map((row) => (
+                      <div key={row.label} className="hero-system-row">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="hero-system-icon"><row.icon size={16} /></span>
+                          <div className="min-w-0">
+                            <p className="text-sm text-white/80 truncate">{row.label}</p>
+                            <div className="mt-2 h-[2px] bg-white/5 rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${row.percent}%` }}
+                                transition={{ duration: 1.2, delay: 0.7, ease }}
+                                className="h-full bg-primary"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-[10px] tracking-[0.16em] text-primary">{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 mt-7">
+                    {[
+                      ["24/7", "SYSTEM"],
+                      ["99.9%", "UPTIME"],
+                      ["GLOBAL", "SCALE"],
+                    ].map(([value, label]) => (
+                      <div key={label} className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
+                        <p className="text-lg font-semibold">{value}</p>
+                        <p className="mt-1 text-[9px] tracking-[0.18em] text-white/30">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -right-7 -bottom-8 w-40 h-40 border border-primary/15 rounded-full" />
+              <div className="absolute -right-2 -bottom-3 w-24 h-24 border border-white/10 rounded-full" />
             </motion.div>
-          </motion.div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/[0.06] bg-black/35 backdrop-blur-xl">
+          <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-16 h-16 flex items-center justify-between text-[10px] md:text-xs tracking-[0.18em] text-white/28">
+            <span>TERQIVO TECHNOLOGY COMPANY</span>
+            <span className="hidden md:inline">SCROLL TO DISCOVER</span>
+          </div>
         </div>
       </section>
 
-      {/* Services Overview */}
-      <section className="py-32 bg-secondary/10 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+      <section className="py-24 md:py-32 border-b border-white/[0.06] relative">
+        <div className="absolute inset-0 section-radial pointer-events-none" />
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-16 relative">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{
-              duration: 0.6,
-              ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-            }}
-            className="flex flex-col md:flex-row items-start md:items-end justify-between mb-24 gap-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            className="grid lg:grid-cols-[.8fr_1.2fr] gap-12 lg:gap-20 items-end mb-16 md:mb-24"
           >
-            <div>
-              <h2 className="text-4xl md:text-6xl font-semibold tracking-tight mb-6 text-foreground leading-[1.1]">
-                Core Capabilities
-              </h2>
-              <p className="text-muted-foreground max-w-xl text-lg md:text-xl leading-relaxed">
-                Comprehensive engineering solutions designed to scale. From
-                infrastructure to user experience.
-              </p>
-            </div>
-            <Link
-              to="/services"
-              className="group text-sm font-medium transition-colors flex items-center gap-2 border-b border-primary/30 hover:border-primary pb-1 text-muted-foreground hover:text-foreground"
-            >
-              View all services
-              <motion.span
-                className="inline-block"
-                whileHover={{ x: 3 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ArrowRight size={16} />
-              </motion.span>
-            </Link>
+            <motion.div variants={reveal}>
+              <span className="section-kicker">WHAT WE ENGINEER</span>
+              <h2 className="section-title mt-5">Technology with real impact.</h2>
+            </motion.div>
+            <motion.p variants={reveal} className="text-lg md:text-xl text-white/45 leading-relaxed max-w-2xl lg:ml-auto">
+              We combine product thinking, engineering excellence and intelligent technology to create systems people can rely on.
+            </motion.p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {[
-              {
-                icon: <Terminal size={26} strokeWidth={1.5} />,
-                title: "Custom Software",
-                description:
-                  "Full-stack web and mobile applications built with modern architectures like React, Node, and Go.",
-              },
-              {
-                icon: <Cpu size={26} strokeWidth={1.5} />,
-                title: "AI Solutions",
-                description:
-                  "Integration of large language models, machine learning pipelines, and intelligent automation.",
-              },
-              {
-                icon: <Globe size={26} strokeWidth={1.5} />,
-                title: "Cloud Infrastructure",
-                description:
-                  "Scalable cloud-native architectures on AWS and GCP with robust CI/CD pipelines.",
-              },
-            ].map((service, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 40 }}
+          <div className="grid md:grid-cols-3 border border-white/[0.07] rounded-[2rem] overflow-hidden bg-white/[0.015]">
+            {services.map((service, index) => (
+              <motion.article
+                key={service.title}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{
-                  duration: 0.6,
-                  delay: i * 0.15,
-                  ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-                }}
-                className="p-10 md:p-12 rounded-[2.5rem] bg-card/40 backdrop-blur-sm border border-border/60 hover:border-border transition-all duration-300 group hover:bg-card/80"
+                viewport={{ once: true }}
+                transition={{ duration: 0.65, delay: index * 0.1, ease }}
+                className="service-panel group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-secondary/80 flex items-center justify-center mb-10 text-foreground border border-border/50 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-[0_0_20px_rgba(220,38,38,0.3)]">
-                  {service.icon}
+                <div className="flex justify-between items-start mb-16">
+                  <span className="service-icon"><service.icon size={24} /></span>
+                  <span className="text-xs tracking-[0.2em] text-white/20">{service.number}</span>
                 </div>
-                <h3 className="text-2xl font-semibold mb-5 tracking-tight text-foreground">
-                  {service.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed text-lg">
-                  {service.description}
-                </p>
+                <h3 className="text-2xl md:text-[1.7rem] font-medium tracking-tight mb-4">{service.title}</h3>
+                <p className="text-white/42 leading-relaxed mb-10">{service.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {service.tags.map((tag) => <span className="service-tag" key={tag}>{tag}</span>)}
+                </div>
+                <ArrowUpRight className="absolute right-7 bottom-7 text-white/15 group-hover:text-primary transition-all group-hover:-translate-y-1 group-hover:translate-x-1" size={22} />
+              </motion.article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 md:py-36 relative overflow-hidden">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-16">
+          <div className="grid lg:grid-cols-2 gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease }}
+              className="product-card product-card-primary"
+            >
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center justify-between">
+                  <span className="section-kicker text-white/55">FLAGSHIP PRODUCT</span>
+                  <Link to="/products" className="round-link"><ArrowUpRight size={20} /></Link>
+                </div>
+                <div className="mt-auto pt-28">
+                  <p className="text-sm text-white/45 mb-3">AI Desktop Intelligence</p>
+                  <h3 className="text-5xl md:text-7xl font-semibold tracking-[-0.055em] leading-none mb-6">Manos AI</h3>
+                  <p className="text-lg text-white/55 max-w-lg leading-relaxed">
+                    A powerful AI assistant designed to make computers more intelligent, useful and human.
+                  </p>
+                </div>
+              </div>
+              <div className="product-orbit" />
+              <div className="absolute right-[-10%] top-[12%] opacity-30"><Cpu size={260} strokeWidth={0.35} /></div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.12, ease }}
+              className="product-card bg-card border border-border"
+            >
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center justify-between">
+                  <span className="section-kicker">COMPANY PLATFORM</span>
+                  <Link to="/about" className="round-link"><ArrowUpRight size={20} /></Link>
+                </div>
+                <div className="mt-auto pt-28">
+                  <p className="text-sm text-white/35 mb-3">Building beyond software</p>
+                  <h3 className="text-5xl md:text-7xl font-semibold tracking-[-0.055em] leading-none mb-6">Terqivo</h3>
+                  <p className="text-lg text-white/45 max-w-lg leading-relaxed">
+                    A technology company creating software, AI products and platforms for the next generation.
+                  </p>
+                </div>
+              </div>
+              <div className="absolute inset-0 product-grid opacity-50" />
+              <div className="absolute -right-16 -top-16 w-72 h-72 rounded-full border border-primary/15" />
+              <div className="absolute -right-4 -top-4 w-44 h-44 rounded-full border border-white/[0.06]" />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 border-y border-white/[0.06] bg-white/[0.012]">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-16">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.07] border border-white/[0.07] rounded-[1.75rem] overflow-hidden">
+            {strengths.map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-card p-8 md:p-10"
+              >
+                <item.icon size={22} className="text-primary mb-8" />
+                <h3 className="text-lg font-medium mb-2">{item.title}</h3>
+                <p className="text-sm text-white/35 leading-relaxed">{item.text}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Products/Software */}
-      <section className="py-32 relative border-t border-border/30">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{
-              duration: 0.6,
-              ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-            }}
-          >
-            <h2 className="text-4xl md:text-6xl font-semibold tracking-tight mb-24 text-foreground leading-[1.1]">
-              Featured Software
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.6,
-                ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-              }}
-              className="group rounded-[3rem] bg-card border border-border/60 overflow-hidden flex flex-col h-[600px] hover:border-border transition-colors relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/50 pointer-events-none z-10" />
-              <div className="p-12 flex-1 relative z-20">
-                <div className="flex justify-between items-start mb-8">
-                  <h3 className="text-3xl lg:text-4xl font-semibold tracking-tight">
-                    Nexus Data
-                  </h3>
-                  <Link
-                    to="/products/nexus"
-                    className="w-14 h-14 rounded-full bg-secondary/80 backdrop-blur-sm border border-border/60 flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-primary-foreground transition-all duration-300 group-hover:scale-110 shadow-sm"
-                  >
-                    <ArrowUpRight size={26} strokeWidth={1.5} />
-                  </Link>
-                </div>
-                <p className="text-muted-foreground mb-8 max-w-sm text-lg leading-relaxed">
-                  High-performance data aggregation and analytics platform
-                  designed for real-time enterprise observability.
-                </p>
-              </div>
-              <div className="h-[55%] bg-secondary/20 p-8 flex items-center justify-center relative overflow-hidden">
-                {/* Abstract UI representation */}
-                <motion.div
-                  whileHover={{ rotate: 0, scale: 1.05 }}
-                  className="w-full max-w-md bg-background border border-border/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] p-6 transform rotate-2 transition-all duration-500 z-0"
-                >
-                  <div className="flex items-center gap-2 mb-6 border-b border-border/50 pb-4">
-                    <div className="w-3 h-3 rounded-full bg-border" />
-                    <div className="w-3 h-3 rounded-full bg-border" />
-                    <div className="w-3 h-3 rounded-full bg-border" />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="h-4 bg-secondary rounded-md w-3/4" />
-                    <div className="h-4 bg-secondary rounded-md w-1/2" />
-                    <div className="h-28 bg-secondary/40 rounded-xl border border-border/50 mt-8" />
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.6,
-                delay: 0.2,
-                ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-              }}
-              className="group rounded-[3rem] bg-card border border-border/60 overflow-hidden flex flex-col h-[600px] hover:border-border transition-colors relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/50 pointer-events-none z-10" />
-              <div className="p-12 flex-1 relative z-20">
-                <div className="flex justify-between items-start mb-8">
-                  <h3 className="text-3xl lg:text-4xl font-semibold tracking-tight">
-                    TERQIVO ID
-                  </h3>
-                  <Link
-                    to="/products/identity"
-                    className="w-14 h-14 rounded-full bg-secondary/80 backdrop-blur-sm border border-border/60 flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-primary-foreground transition-all duration-300 group-hover:scale-110 shadow-sm"
-                  >
-                    <ArrowUpRight size={26} strokeWidth={1.5} />
-                  </Link>
-                </div>
-                <p className="text-muted-foreground mb-8 max-w-sm text-lg leading-relaxed">
-                  Secure, unified authentication and authorization service for
-                  distributed microservice architectures.
-                </p>
-              </div>
-              <div className="h-[55%] bg-secondary/20 p-8 flex items-center justify-center relative overflow-hidden">
-                {/* Abstract UI representation */}
-                <motion.div
-                  whileHover={{ rotate: 0, scale: 1.05 }}
-                  className="w-full max-w-xs bg-background border border-border/60 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] p-8 transform -rotate-2 transition-all duration-500 z-0"
-                >
-                  <div className="h-14 bg-secondary/50 rounded-xl mb-8 flex items-center justify-center border border-border/50">
-                    <div className="w-6 h-6 bg-primary rounded-md" />
-                  </div>
-                  <div className="space-y-5">
-                    <div className="h-12 bg-card border border-border/60 rounded-xl" />
-                    <div className="h-12 bg-card border border-border/60 rounded-xl" />
-                    <div className="h-14 bg-primary rounded-xl mt-6 shadow-[0_0_20px_rgba(220,38,38,0.3)]" />
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Courses CTA */}
-      <section className="py-32 lg:py-40 border-t border-border/30 relative overflow-hidden bg-secondary/5">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 md:px-12 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{
-              duration: 0.6,
-              ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-            }}
-            className="max-w-3xl mx-auto"
-          >
-            <h2 className="text-4xl md:text-6xl font-semibold tracking-tight mb-8 text-foreground">
-              Education & Training
-            </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 leading-relaxed">
-              We don't just build technology, we teach it. Explore professional
-              courses in Software Engineering, AI, and System Architecture
-              taught by our lead engineers.
-            </p>
-            <Link
-              to="/courses"
-              className="inline-flex items-center gap-2.5 px-9 py-4 bg-secondary text-foreground border border-border/60 rounded-full hover:bg-secondary/80 transition-all hover:scale-105 active:scale-95 font-medium text-[15px]"
-            >
-              View available courses <ArrowRight size={18} />
-            </Link>
-          </motion.div>
-        </div>
+      <section className="py-28 md:py-40 relative overflow-hidden">
+        <div className="absolute inset-0 cta-glow pointer-events-none" />
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.75, ease }}
+          className="max-w-5xl mx-auto px-6 text-center relative z-10"
+        >
+          <span className="section-kicker">YOUR NEXT IDEA STARTS HERE</span>
+          <h2 className="text-5xl md:text-8xl font-semibold tracking-[-0.06em] leading-[0.94] mt-7 mb-9">
+            Let&apos;s build something <span className="text-primary">remarkable.</span>
+          </h2>
+          <p className="text-lg md:text-xl text-white/42 max-w-2xl mx-auto mb-11 leading-relaxed">
+            Partner with Terqivo to transform your idea into a product built for the future.
+          </p>
+          <Link to="/contact" className="hero-primary-button inline-flex group">
+            Talk to Terqivo
+            <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+          </Link>
+        </motion.div>
       </section>
     </div>
   );

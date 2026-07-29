@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Code2 } from 'lucide-react';
+import { Menu, X, Code2, Moon, Sun } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
+import { useTheme } from '../context/ThemeContext';
 
 const navLinks = [
   { title: 'Services', path: '/services' },
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { general } = useSettings();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,6 +76,15 @@ export default function Navbar() {
             );
           })}
           <div className="h-4 w-px bg-border mx-2" />
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="theme-toggle"
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
+          </button>
           <Link
             to="/contact"
             className="text-sm font-medium bg-primary text-primary-foreground px-6 py-2.5 rounded-full hover:bg-primary-hover transition-all hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.3)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
@@ -83,8 +94,12 @@ export default function Navbar() {
         </nav>
 
         {/* Mobile Toggle */}
+        <div className="md:hidden flex items-center gap-2">
+          <button type="button" onClick={toggleTheme} className="theme-toggle" aria-label="Toggle color theme">
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
         <button
-          className="md:hidden p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary rounded-md"
+          className="p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary rounded-md"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-expanded={mobileMenuOpen}
           aria-label="Toggle menu"
@@ -97,6 +112,7 @@ export default function Navbar() {
             {mobileMenuOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
           </motion.div>
         </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}

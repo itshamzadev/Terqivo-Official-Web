@@ -11,3 +11,5 @@ client/.env
 server/.env
 
 public/downloads/*.exe
+terqivo old web/
+*.zip
