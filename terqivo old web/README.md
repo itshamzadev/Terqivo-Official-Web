@@ -57,7 +57,7 @@ This project is configured to run on an Ubuntu VPS managed via aaPanel.
 2. Update the `.env` file with your production details:
    ```env
    NODE_ENV=production
-   PORT=3000
+   PORT=4000
    MONGODB_URI=mongodb+srv://<username>:<password>@cluster0...
    JWT_SECRET=your_secure_random_string
    CLIENT_URL=https://terqivo.com
@@ -83,7 +83,7 @@ This project is configured to run on an Ubuntu VPS managed via aaPanel.
 2. **Project Directory**: `/www/wwwroot/terqivo`
 3. **Startup File**: `/www/wwwroot/terqivo/dist/server.cjs`
 4. **Project Name**: `terqivo_api`
-5. **Port**: `3000`
+5. **Port**: `4000`
 6. **Node Version**: Select the installed LTS version.
 7. Click **Submit** to start the backend.
 
@@ -109,8 +109,8 @@ This project is configured to run on an Ubuntu VPS managed via aaPanel.
 - [ ] Dependencies installed via `npm run install:all`
 - [ ] `.env` file created with valid production secrets
 - [ ] Build generated successfully via `npm run build`
-- [ ] Backend started successfully on port `3000` via aaPanel Node Project Manager
-- [ ] Nginx configured with React Router fallback and proxy to `127.0.0.1:3000`
+- [ ] Backend started successfully on port `4000` via aaPanel Node Project Manager
+- [ ] Nginx configured with React Router fallback and proxy to `127.0.0.1:4000`
 - [ ] SSL enabled and forced (HTTPS)
 - [ ] Super Admin seeded via `npm run seed:admin`
 

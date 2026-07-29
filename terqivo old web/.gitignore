@@ -11,5 +11,3 @@ client/.env
 server/.env
 
 public/downloads/*.exe
-
-*.zip

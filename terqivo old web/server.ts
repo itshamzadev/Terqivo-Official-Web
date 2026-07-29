@@ -31,21 +31,18 @@ if (process.env.NODE_ENV === "production") {
 async function startServer() {
   const app = express();
   const parsedPort = Number(process.env.PORT);
-  const PORT = Number.isFinite(parsedPort) && parsedPort > 0 ? parsedPort : 3000;
+  const PORT = isNaN(parsedPort) || parsedPort === 0 ? 3000 : parsedPort;
 
   // Trust the reverse proxy
   app.set("trust proxy", 1);
 
-  // Security middleware. Helmet is production-only because its default
-  // cross-origin headers can interfere with Vite's development client/HMR.
-  if (process.env.NODE_ENV === "production") {
-    app.use(
-      helmet({
-        contentSecurityPolicy: false,
-        crossOriginEmbedderPolicy: false,
-      }),
-    );
-  }
+  // Security Middlewares
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
   app.use(mongoSanitize());
   app.use(compression());
 
