@@ -67,29 +67,6 @@ export default function HomePage() {
               Independent software company · Pakistan
             </p>
 
-            {/* Website development announcement */}
-            <div className="site-announcement" role="status">
-              <div className="site-announcement-track">
-                <span className="site-announcement-badge">NOTICE</span>
-
-                <span className="site-announcement-text">
-                  Terqivo’s new website is currently under development. Some
-                  pages, features and content may still be incomplete while we
-                  continue improving the experience.
-                </span>
-
-                <span className="site-announcement-separator">•</span>
-
-                <span className="site-announcement-badge">NOTICE</span>
-
-                <span className="site-announcement-text" aria-hidden="true">
-                  Terqivo’s new website is currently under development. Some
-                  pages, features and content may still be incomplete while we
-                  continue improving the experience.
-                </span>
-              </div>
-            </div>
-
             <h1>We design and build software people enjoy using.</h1>
 
             <p className="human-lead">
