@@ -12,14 +12,14 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('terqivo-theme');
+    const saved = localStorage.getItem('terqivo-theme-v2');
     return saved === 'dark' ? 'dark' : 'light';
   });
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('terqivo-theme', theme);
+    localStorage.setItem('terqivo-theme-v2', theme);
   }, [theme]);
 
   const value = useMemo(() => ({
