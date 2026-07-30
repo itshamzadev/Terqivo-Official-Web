@@ -8,8 +8,8 @@ export default function Footer() {
   const { general } = useSettings();
 
   return (
-    <footer className="border-t border-border/50 bg-secondary/10 pt-24 pb-12 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+    <footer className="border-t border-border/70 bg-secondary/10 pt-24 pb-12 relative overflow-hidden">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-14 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16 mb-20">
           <div className="md:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-8 group">
@@ -25,7 +25,7 @@ export default function Footer() {
               )}
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-              {general?.description || 'Builds for Generations. We architect, design, and engineer world-class software, AI systems, and technology solutions.'}
+              {general?.description || 'Engineering dependable software, intelligent products and digital platforms for ambitious businesses.'}
             </p>
             <div className="flex gap-4 text-muted-foreground">
               {general?.twitterUrl && (
@@ -69,7 +69,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-6 text-foreground">Connect</h4>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Ready to build the future? Reach out to our engineering team.
+              Have a product idea or a system that needs improvement? Talk directly with our engineering team.
             </p>
             <Link to="/contact" className="group inline-flex items-center gap-2 text-sm font-medium text-foreground bg-secondary/80 border border-border/50 px-5 py-2.5 rounded-full hover:bg-primary hover:border-primary hover:text-primary-foreground transition-all duration-300">
               Start a project 

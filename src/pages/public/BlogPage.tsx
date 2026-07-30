@@ -48,7 +48,7 @@ export default function BlogPage() {
       <SEO title="Blog | TERQIVO" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-14 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -80,7 +80,7 @@ export default function CourseDetailsPage() {
 
   return (
     <div className="min-h-screen pt-32 pb-20 relative bg-background">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-14">
         <Link to="/courses" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-10 group">
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Courses
         </Link>

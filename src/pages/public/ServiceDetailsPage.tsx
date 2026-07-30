@@ -45,7 +45,7 @@ export default function ServiceDetailsPage() {
     <div className="min-h-screen pt-32 pb-20 relative bg-background overflow-hidden">
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[150px] rounded-full pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-14 relative z-10">
         <Link to="/services" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-10 group">
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Services
         </Link>

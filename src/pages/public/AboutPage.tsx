@@ -33,7 +33,7 @@ export default function AboutPage() {
     <div className="min-h-screen pt-32 pb-24 relative overflow-hidden bg-background">
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[150px] rounded-full pointer-events-none translate-x-1/3 -translate-y-1/4" />
       
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-14 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -59,6 +59,16 @@ export default function AboutPage() {
         </motion.div>
 
         {!content?.content && (
+          <>
+          <motion.div initial={{opacity:0,y:30}} whileInView={{opacity:1,y:0}} viewport={{once:true}} className="mt-20 rounded-[2.5rem] overflow-hidden border border-border shadow-[0_30px_90px_rgba(15,35,65,.14)] relative min-h-[380px]">
+            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1800&q=88" alt="Technology team collaborating on software" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#07172f]/95 via-[#07172f]/70 to-transparent" />
+            <div className="relative z-10 p-10 md:p-16 max-w-2xl text-white">
+              <span className="text-sm uppercase tracking-[.22em] text-cyan-200">How we work</span>
+              <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mt-5 mb-6">Strategy, engineering and design—working as one team.</h2>
+              <p className="text-lg text-slate-200 leading-relaxed">We turn complex business requirements into secure, usable and maintainable software products.</p>
+            </div>
+          </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mt-24 lg:mt-32 border-t border-border/30 pt-20">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -88,13 +98,14 @@ export default function AboutPage() {
               <ul className="space-y-6">
                 {['System Architecture', 'Full-Stack Engineering', 'Artificial Intelligence Integration', 'Cloud Infrastructure (AWS/GCP)', 'UI/UX Design', 'Developer Education'].map((item, i) => (
                   <li key={i} className="flex items-center gap-4 text-muted-foreground text-lg">
-                    <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 shadow-[0_0_10px_rgba(220,38,38,0.5)]" />
+                    <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 shadow-[0_0_12px_rgba(23,107,255,0.35)]" />
                     {item}
                   </li>
                 ))}
               </ul>
             </motion.div>
           </div>
+          </>
         )}
       </div>
     </div>

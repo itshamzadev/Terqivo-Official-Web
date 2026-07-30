@@ -54,7 +54,7 @@ export default function ContactPage() {
       <SEO title="Contact | TERQIVO" description="Get in touch with TERQIVO for your technology and software engineering needs." />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+      <div className="max-w-[1440px] mx-auto px-5 md:px-10 lg:px-14 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
