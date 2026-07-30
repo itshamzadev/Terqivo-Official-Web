@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === "production") {
 async function startServer() {
   const app = express();
   const parsedPort = Number(process.env.PORT);
-  const PORT = Number.isFinite(parsedPort) && parsedPort > 0 ? parsedPort : 3000;
+  const PORT = Number.isFinite(parsedPort) && parsedPort > 0 ? parsedPort : 4000;
 
   // Trust the reverse proxy
   app.set("trust proxy", 1);
