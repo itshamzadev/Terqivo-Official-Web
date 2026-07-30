@@ -1,143 +1,81 @@
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Bot,
-  CheckCircle2,
-  Cloud,
-  Code2,
-  Layers3,
-  ShieldCheck,
-  Sparkles,
-  Workflow,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Code2, Cloud, Cpu, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "../../components/SEO";
-import { HeroScene } from "../../components/3d/HeroScene";
 import { useSettings } from "../../context/SettingsContext";
 
-const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
-const reveal = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease } },
-};
-
 const services = [
-  { icon: Code2, title: "Custom software", text: "Web, desktop and mobile products designed around your real business workflows.", image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=85" },
-  { icon: Bot, title: "AI solutions", text: "Practical AI assistants, intelligent automation and agent-powered experiences.", image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=85" },
-  { icon: Cloud, title: "Cloud platforms", text: "Secure infrastructure, APIs and scalable systems ready for production growth.", image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=85" },
+  { n: "01", icon: Code2, title: "Software products", text: "Web platforms, business systems and desktop software made around the way your team actually works." },
+  { n: "02", icon: Cpu, title: "Applied AI", text: "Useful assistants, automation and intelligent features—designed for real tasks, not demos." },
+  { n: "03", icon: Cloud, title: "Cloud & backend", text: "APIs, databases, infrastructure and deployment foundations that stay dependable as you grow." },
+  { n: "04", icon: Smartphone, title: "Digital experiences", text: "Clear, fast interfaces across web and mobile with careful attention to the small details." },
 ];
 
-const capabilities = [
-  { icon: ShieldCheck, title: "Secure by design", text: "Security and privacy are built into architecture from the first decision." },
-  { icon: Layers3, title: "Built to scale", text: "Clean systems that can grow without becoming fragile or expensive." },
-  { icon: Workflow, title: "End-to-end delivery", text: "Strategy, design, engineering, deployment and long-term improvement." },
-  { icon: Sparkles, title: "Thoughtful experience", text: "Clear interfaces that feel fast, polished and easy to use." },
-];
+const ease = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
 export default function HomePage() {
   const { general } = useSettings();
-
   return (
-    <div className="home-page bg-background text-foreground overflow-hidden">
+    <div className="human-home">
       <SEO title={general?.companyName || "TERQIVO"} description={general?.description} />
 
-      <section className="new-hero relative min-h-[820px] flex items-center overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none opacity-45"><HeroScene /></div>
-        <div className="new-hero-overlay absolute inset-0 pointer-events-none" />
-        <div className="max-w-[1380px] mx-auto px-6 md:px-10 lg:px-14 pt-32 pb-20 relative z-10 w-full">
-          <div className="grid lg:grid-cols-[1.02fr_.98fr] gap-14 lg:gap-20 items-center">
-            <motion.div initial="hidden" animate="visible" transition={{ staggerChildren: 0.1 }}>
-              <motion.div variants={reveal} className="brand-pill mb-7">
-                <span className="brand-pill-dot" /> SOFTWARE • AI • CLOUD
-              </motion.div>
-              <motion.h1 variants={reveal} className="new-hero-title">
-                We turn ambitious ideas into <span>remarkable technology.</span>
-              </motion.h1>
-              <motion.p variants={reveal} className="new-hero-copy">
-                {general?.description || "Terqivo designs and engineers modern software, intelligent products and digital platforms that help businesses move forward."}
-              </motion.p>
-              <motion.div variants={reveal} className="flex flex-col sm:flex-row gap-4 mt-9">
-                <Link to="/contact" className="new-primary-btn group">Start a project <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></Link>
-                <Link to="/services" className="new-secondary-btn group">Explore our work <ArrowUpRight size={17} className="group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" /></Link>
-              </motion.div>
-              <motion.div variants={reveal} className="hero-trust-row">
-                {["Product strategy", "Senior engineering", "Production delivery"].map((item) => (
-                  <span key={item}><CheckCircle2 size={16} /> {item}</span>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, x: 45 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .9, delay: .2, ease }} className="relative">
-              <div className="hero-image-frame">
-                <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1500&q=88" alt="Software engineering team collaborating" className="hero-team-image" />
-                <div className="hero-image-shade" />
-                <div className="hero-image-caption">
-                  <span>From first idea to production</span>
-                  <strong>Design. Build. Scale.</strong>
-                </div>
-              </div>
-              <div className="floating-proof floating-proof-one"><span>01</span><div><b>Product thinking</b><small>Built around real users</small></div></div>
-              <div className="floating-proof floating-proof-two"><span>02</span><div><b>Modern engineering</b><small>Fast, secure and scalable</small></div></div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      <section className="logo-strip">
-        <div className="max-w-[1380px] mx-auto px-6 md:px-10 lg:px-14">
-          <p>Technology we work with</p>
-          <div className="tech-wordmarks"><span>REACT</span><span>NODE.JS</span><span>MONGODB</span><span>PYTHON</span><span>DOCKER</span><span>GEMINI</span></div>
-        </div>
-      </section>
-
-      <section className="section-space">
-        <div className="max-w-[1380px] mx-auto px-6 md:px-10 lg:px-14">
-          <div className="section-heading-grid">
-            <div><span className="new-kicker">WHAT WE BUILD</span><h2>Technology that solves real problems.</h2></div>
-            <p>We combine product strategy, thoughtful design and strong engineering to deliver software that is useful, reliable and ready to grow.</p>
-          </div>
-          <div className="service-image-grid">
-            {services.map((service, index) => (
-              <motion.article key={service.title} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * .1 }} className="service-image-card group">
-                <div className="service-image-wrap"><img src={service.image} alt={service.title} /><div className="service-image-overlay" /></div>
-                <div className="service-image-content"><span className="service-card-icon"><service.icon size={21} /></span><h3>{service.title}</h3><p>{service.text}</p><Link to="/services">Learn more <ArrowUpRight size={16} /></Link></div>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="feature-split-section">
-        <div className="max-w-[1380px] mx-auto px-6 md:px-10 lg:px-14 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="feature-photo">
-            <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=88" alt="Modern cloud infrastructure" />
-            <div className="feature-photo-badge"><strong>Production ready</strong><span>Secure infrastructure and reliable delivery</span></div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-            <span className="new-kicker">WHY TERQIVO</span>
-            <h2 className="feature-title">A technology partner, not just a code vendor.</h2>
-            <p className="feature-copy">We care about the product after launch. Every decision is made for clarity, performance, maintainability and long-term business value.</p>
-            <div className="capability-list">
-              {capabilities.map((item) => <div key={item.title}><span><item.icon size={20} /></span><div><h3>{item.title}</h3><p>{item.text}</p></div></div>)}
+      <section className="human-hero">
+        <div className="human-container human-hero-grid">
+          <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .75, ease }}>
+            <p className="human-overline">Independent software company · Pakistan</p>
+            <h1>We design and build software people enjoy using.</h1>
+            <p className="human-lead">{general?.description || "Terqivo works with ambitious teams to turn ideas, operations and opportunities into thoughtful digital products."}</p>
+            <div className="human-actions">
+              <Link to="/contact" className="human-btn human-btn-dark">Discuss a project <ArrowRight size={17}/></Link>
+              <Link to="/products" className="human-text-link">See our products <ArrowUpRight size={16}/></Link>
             </div>
-            <Link to="/about" className="text-link">Discover Terqivo <ArrowRight size={17} /></Link>
+            <div className="human-note"><span>Currently taking selected projects</span><span>Typical reply within 1 business day</span></div>
+          </motion.div>
+
+          <motion.div className="human-collage" initial={{ opacity: 0, x: 34 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .85, delay: .12, ease }}>
+            <figure className="human-photo human-photo-main"><img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1500&q=88" alt="Software team working together"/></figure>
+            <figure className="human-photo human-photo-small"><img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=88" alt="Modern technology workspace"/></figure>
+            <div className="human-caption"><strong>From idea to release</strong><span>Strategy · Design · Engineering</span></div>
           </motion.div>
         </div>
       </section>
 
-      <section className="product-showcase-section">
-        <div className="max-w-[1380px] mx-auto px-6 md:px-10 lg:px-14">
-          <div className="product-showcase-card">
-            <div className="product-showcase-copy"><span className="new-kicker light">FLAGSHIP PRODUCT</span><h2>Manos AI</h2><p>An intelligent desktop assistant created to make everyday computer work faster, simpler and more natural.</p><Link to="/products" className="new-light-btn">Explore products <ArrowRight size={17} /></Link></div>
-            <div className="product-showcase-image"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=88" alt="Advanced computer technology" /></div>
+      <section className="human-proof">
+        <div className="human-container human-proof-grid">
+          <p>Built with modern, proven technology</p>
+          <div><span>React</span><span>Node.js</span><span>MongoDB</span><span>Python</span><span>Docker</span></div>
+        </div>
+      </section>
+
+      <section className="human-section">
+        <div className="human-container">
+          <div className="human-section-intro"><p className="human-overline">What we do</p><h2>Good software starts with understanding the problem.</h2><p>We keep the process direct: learn the business, make the right decisions, build carefully, and improve with real feedback.</p></div>
+          <div className="human-service-list">
+            {services.map((service) => <Link to="/services" key={service.n} className="human-service-row"><span className="human-index">{service.n}</span><span className="human-service-icon"><service.icon size={20}/></span><div><h3>{service.title}</h3><p>{service.text}</p></div><ArrowUpRight className="human-row-arrow" size={21}/></Link>)}
           </div>
         </div>
       </section>
 
-      <section className="final-cta-section">
-        <div className="max-w-4xl mx-auto px-6 text-center"><span className="new-kicker">LET'S CREATE SOMETHING VALUABLE</span><h2>Your next product can start today.</h2><p>Tell us what you want to build. We will help shape the idea, engineer the product and prepare it for the real world.</p><Link to="/contact" className="new-primary-btn inline-flex group">Talk to Terqivo <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></Link></div>
+      <section className="human-work-section">
+        <div className="human-container human-work-grid">
+          <div className="human-work-photo"><img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1500&q=88" alt="Team reviewing a digital product"/></div>
+          <div className="human-work-copy">
+            <p className="human-overline">How we work</p><h2>Small team. Clear communication. Serious craft.</h2>
+            <p>There are no layers of account managers between you and the people making the product. You work directly with the team responsible for the outcome.</p>
+            <ul><li><Check size={17}/>Practical scope before development</li><li><Check size={17}/>Visible progress throughout the project</li><li><Check size={17}/>Clean handover and ongoing support</li></ul>
+            <Link to="/about" className="human-text-link">Learn about Terqivo <ArrowRight size={16}/></Link>
+          </div>
+        </div>
       </section>
+
+      <section className="human-product-section">
+        <div className="human-container human-product-card">
+          <div><p className="human-overline">A product by Terqivo</p><h2>Manos AI</h2><p>An intelligent desktop assistant designed to make everyday computer work simpler, faster and more natural.</p><Link to="/products" className="human-btn human-btn-light">Explore Manos AI <ArrowRight size={17}/></Link></div>
+          <div className="human-product-image"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=88" alt="Manos AI product workspace"/></div>
+        </div>
+      </section>
+
+      <section className="human-cta"><div className="human-container"><p className="human-overline">Have something in mind?</p><div><h2>Let’s make it useful, clear and built to last.</h2><Link to="/contact" className="human-btn human-btn-dark">Start a conversation <ArrowRight size={17}/></Link></div></div></section>
     </div>
   );
 }
