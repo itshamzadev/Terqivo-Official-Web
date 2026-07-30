@@ -21,7 +21,7 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 16);
+    const handleScroll = () => setIsScrolled(window.scrollY > 12);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -30,32 +30,17 @@ export default function Navbar() {
   useEffect(() => setMobileMenuOpen(false), [location.pathname]);
 
   return (
-    <motion.header
-      initial={{ y: -32, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className={`site-header ${isScrolled ? 'site-header--scrolled' : ''}`}
-    >
+    <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.45 }} className={`site-header ${isScrolled ? 'site-header--scrolled' : ''}`}>
       <div className="site-header__inner">
         <Link to="/" className="site-wordmark" aria-label="Terqivo home">
-          {general?.logoUrl ? (
-            <img src={general.logoUrl} alt={general.companyName || 'TERQIVO'} />
-          ) : (
-            <>
-              <span className="site-wordmark__mark" aria-hidden="true">T</span>
-              <span>{general?.companyName || 'TERQIVO'}</span>
-            </>
-          )}
+          <span className="site-wordmark__mark" aria-hidden="true">T</span>
+          <span>{general?.companyName || 'TERQIVO'}</span>
         </Link>
 
         <nav className="site-nav" aria-label="Main navigation">
           {navLinks.map((link) => {
             const active = location.pathname.startsWith(link.path);
-            return (
-              <Link key={link.path} to={link.path} className={active ? 'is-active' : ''} aria-current={active ? 'page' : undefined}>
-                {link.title}
-              </Link>
-            );
+            return <Link key={link.path} to={link.path} className={active ? 'is-active' : ''}>{link.title}</Link>;
           })}
         </nav>
 
@@ -72,12 +57,8 @@ export default function Navbar() {
 
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.nav id="mobile-navigation" className="site-mobile-nav" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.22 }}>
-            {navLinks.map((link, index) => (
-              <motion.div key={link.path} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.035 }}>
-                <Link to={link.path}>{link.title}<span>0{index + 1}</span></Link>
-              </motion.div>
-            ))}
+          <motion.nav id="mobile-navigation" className="site-mobile-nav" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            {navLinks.map((link) => <Link key={link.path} to={link.path}>{link.title}<ArrowUpRight size={16} /></Link>)}
             <Link to="/contact" className="site-mobile-nav__contact">Start a project <ArrowUpRight size={18} /></Link>
           </motion.nav>
         )}
