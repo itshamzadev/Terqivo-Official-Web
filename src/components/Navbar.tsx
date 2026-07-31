@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, Moon, Sun, ArrowUpRight, ChevronDown } from 'lucide-react';
+import { Menu, X, Moon, Sun, ArrowUpRight } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -42,8 +42,7 @@ export default function Navbar() {
         <nav className="site-nav" aria-label="Main navigation">
           {navLinks.map((link) => {
             const active = location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path));
-            const dropdown = ['Services', 'Products', 'Courses', 'Company'].includes(link.title);
-            return <Link key={link.path} to={link.path} className={active ? 'is-active' : ''}>{link.title}{dropdown && <ChevronDown size={13}/>}</Link>;
+            return <Link key={link.path} to={link.path} className={active ? 'is-active' : ''}>{link.title}</Link>;
           })}
         </nav>
 
