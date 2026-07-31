@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, Moon, Sun, ArrowUpRight } from 'lucide-react';
+import { Menu, X, Moon, Sun, ArrowUpRight, ChevronDown } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -11,6 +11,8 @@ const navLinks = [
   { title: 'Courses', path: '/courses' },
   { title: 'Jobs', path: '/jobs' },
   { title: 'Company', path: '/about' },
+  { title: 'Blog', path: '/blog' },
+  { title: 'Contact', path: '/contact' },
 ];
 
 export default function Navbar() {
@@ -21,7 +23,7 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 12);
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -30,7 +32,7 @@ export default function Navbar() {
   useEffect(() => setMobileMenuOpen(false), [location.pathname]);
 
   return (
-    <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.45 }} className={`site-header ${isScrolled ? 'site-header--scrolled' : ''}`}>
+    <motion.header initial={{ y: -14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.38 }} className={`site-header ${isScrolled ? 'site-header--scrolled' : ''}`}>
       <div className="site-header__inner">
         <Link to="/" className="site-wordmark" aria-label="Terqivo home">
           <span className="site-wordmark__mark" aria-hidden="true">T</span>
@@ -39,8 +41,9 @@ export default function Navbar() {
 
         <nav className="site-nav" aria-label="Main navigation">
           {navLinks.map((link) => {
-            const active = location.pathname.startsWith(link.path);
-            return <Link key={link.path} to={link.path} className={active ? 'is-active' : ''}>{link.title}</Link>;
+            const active = location.pathname === link.path || (link.path !== '/' && location.pathname.startsWith(link.path));
+            const dropdown = ['Services', 'Products', 'Courses', 'Company'].includes(link.title);
+            return <Link key={link.path} to={link.path} className={active ? 'is-active' : ''}>{link.title}{dropdown && <ChevronDown size={13}/>}</Link>;
           })}
         </nav>
 
@@ -57,7 +60,7 @@ export default function Navbar() {
 
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.nav id="mobile-navigation" className="site-mobile-nav" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+          <motion.nav id="mobile-navigation" className="site-mobile-nav" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
             {navLinks.map((link) => <Link key={link.path} to={link.path}>{link.title}<ArrowUpRight size={16} /></Link>)}
             <Link to="/contact" className="site-mobile-nav__contact">Start a project <ArrowUpRight size={18} /></Link>
           </motion.nav>
