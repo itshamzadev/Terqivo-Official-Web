@@ -43,8 +43,8 @@ export default function HomePage() {
       <section className="vault-hero">
         <div className="vault-shell vault-hero-grid">
           <motion.div className="vault-hero-copy" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, ease }}>
-            <div className="vault-eyebrow"><Sparkles size={15}/> Independent software company · Pakistan</div>
-            <h1>Build your digital future <span>with confidence.</span></h1>
+            <div className="vault-eyebrow"><Sparkles size={15}/> Independent software company in Pakistan</div>
+            <h1>Software built for <span>real work.</span></h1>
             <p>{general?.description || 'Terqivo designs and engineers dependable software, AI products, cloud systems and digital experiences for ambitious teams.'}</p>
             <div className="vault-actions">
               <Link to="/contact" className="vault-btn vault-btn-gold">Start a project <ArrowRight size={18}/></Link>
@@ -58,7 +58,7 @@ export default function HomePage() {
           </motion.div>
 
           <motion.div className="vault-hero-media" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .75, delay: .1, ease }}>
-            <img src="/images/agentai/operations-management.jpg" alt="Software team collaborating on a digital product" />
+            <img src="/images/hero-team.jpg" alt="Software team collaborating on a digital product" />
             <div className="vault-return-card"><span><ArrowUpRight size={23}/></span><div><strong>From idea to release</strong><small>Strategy · Design · Engineering</small></div></div>
             <div className="vault-mini-card"><Database size={19}/><div><strong>Scalable systems</strong><small>Cloud-ready foundations</small></div></div>
           </motion.div>
@@ -91,7 +91,7 @@ export default function HomePage() {
 
       <section className="vault-section vault-story">
         <div className="vault-shell vault-story-grid">
-          <motion.div className="vault-story-image" initial={{ opacity: 0, x: -25 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}><img src="/images/agentai/customer-service.jpg" alt="Technology team reviewing software work" /></motion.div>
+          <motion.div className="vault-story-image" initial={{ opacity: 0, x: -25 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}><img src="/images/work-team.jpg" alt="Technology team reviewing software work" /></motion.div>
           <motion.div className="vault-story-copy" initial={{ opacity: 0, x: 25 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
             <p className="vault-kicker">How we work</p><h2>Serious engineering without unnecessary complexity.</h2>
             <p>You work directly with the people responsible for the outcome. We keep the process visible, communication honest and technical decisions practical.</p>

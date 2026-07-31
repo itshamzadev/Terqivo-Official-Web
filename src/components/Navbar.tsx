@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, Moon, Sun, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
-import { useTheme } from '../context/ThemeContext';
 
 const navLinks = [
   { title: 'Services', path: '/services' },
@@ -20,7 +19,6 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { general } = useSettings();
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -47,9 +45,6 @@ export default function Navbar() {
         </nav>
 
         <div className="site-header__actions">
-          <button type="button" onClick={toggleTheme} className="site-icon-button" aria-label="Toggle color theme">
-            {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
-          </button>
           <Link to="/contact" className="site-contact-link">Start a project <ArrowUpRight size={15} /></Link>
           <button type="button" className="site-menu-button" onClick={() => setMobileMenuOpen((value) => !value)} aria-expanded={mobileMenuOpen} aria-controls="mobile-navigation" aria-label="Toggle menu">
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}

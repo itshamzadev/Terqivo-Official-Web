@@ -11,22 +11,19 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('terqivo-theme-v2');
-    return saved === 'dark' ? 'dark' : 'light';
-  });
+  const [theme, setThemeState] = useState<Theme>('light');
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('terqivo-theme-v2', theme);
+    document.documentElement.dataset.theme = 'light';
+    document.documentElement.classList.remove('dark');
+    localStorage.removeItem('terqivo-theme-v2');
   }, [theme]);
 
   const value = useMemo(() => ({
-    theme,
-    setTheme: setThemeState,
-    toggleTheme: () => setThemeState((current) => current === 'light' ? 'dark' : 'light'),
-  }), [theme]);
+    theme: 'light' as Theme,
+    setTheme: (_nextTheme: Theme) => setThemeState('light'),
+    toggleTheme: () => setThemeState('light'),
+  }), []);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
