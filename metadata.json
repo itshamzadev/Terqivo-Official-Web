@@ -1,0 +1,6 @@
+{
+  "name": "TERQIVO",
+  "description": "TERQIVO Company Platform - Builds for Generations",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
