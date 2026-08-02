@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { LayoutDashboard, Package, Briefcase, GraduationCap, FileText, MessageSquare, Settings, LogOut, Users, FileSignature, UserCheck, Coins, WalletCards } from 'lucide-react';
+import { LayoutDashboard, Package, Briefcase, GraduationCap, FileText, MessageSquare, Settings, LogOut, Users, FileSignature, UserCheck, Coins, WalletCards, Mail, MailOpen, ScrollText } from 'lucide-react';
 
 export function AdminLayout() {
   const navigate = useNavigate();
@@ -33,6 +33,9 @@ export function AdminLayout() {
     { name: 'Blog', path: '/admin/blog', icon: FileText },
     { name: 'Messages', path: '/admin/messages', icon: MessageSquare },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
+    { name: 'Email Templates', path: '/admin/email-templates', icon: MailOpen },
+    { name: 'Email Logs', path: '/admin/email-logs', icon: ScrollText },
   ];
 
   return (

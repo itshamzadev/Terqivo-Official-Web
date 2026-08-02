@@ -13,6 +13,7 @@ import bcrypt from "bcryptjs";
 import apiRoutes from "./server/routes/api";
 import { AdminUser } from "./server/models/AdminUser";
 import { getUploadsRoot } from "./server/utils/uploads";
+import { ensureDefaultEmailTemplates, verifyEmailTransport } from "./server/utils/emailService";
 
 dotenv.config();
 
@@ -72,6 +73,10 @@ async function connectDatabase(): Promise<void> {
     console.log("Connected to MongoDB");
 
     await autoSeedAdmin();
+    await ensureDefaultEmailTemplates();
+    if (String(process.env.EMAIL_ENABLED || "true").toLowerCase() === "true") {
+      void verifyEmailTransport().then((result) => console.log(`Email transport: ${result.success ? "ready" : result.status}`));
+    }
   } catch (error) {
     console.error("MongoDB connection error:", error);
   }
@@ -102,6 +107,12 @@ async function createApp(): Promise<express.Express> {
   
   // Serve uploads directory
   const uploadsPath = getUploadsRoot();
+  app.use('/uploads/private', (_req: Request, res: Response) => {
+    res.status(404).json({ success: false, message: 'Not found' });
+  });
+  app.use('/uploads/payment-screenshots', (_req: Request, res: Response) => {
+    res.status(404).json({ success: false, message: 'Not found' });
+  });
   app.use('/uploads', express.static(uploadsPath, { fallthrough: false, index: false }));
 
   app.use("/api", apiRoutes);

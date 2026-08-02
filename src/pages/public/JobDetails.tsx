@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/src/components/ui/button';
-import { ArrowLeft, Clock, MapPin, Building, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Building, CheckCircle2, MessageCircle } from 'lucide-react';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import Markdown from 'react-markdown';
+import { formatPrice, whatsappUrl } from '@/src/lib/utils';
+import { useSettings } from '@/src/components/SettingsContext';
 
 export default function JobDetails() {
   const { slug } = useParams();
   const [job, setJob] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { settings } = useSettings();
 
   useEffect(() => {
     fetch(`/api/jobs/${slug}`)
       .then(res => res.json())
       .then(data => {
-        setJob(data);
+        setJob(data.data || null);
         setIsLoading(false);
       })
       .catch(err => {
@@ -116,6 +119,9 @@ export default function JobDetails() {
                 <p className="text-sm text-muted-foreground mb-6">
                   Help us build the future of technology infrastructure.
                 </p>
+                {job.applicationFeeEnabled && (
+                  <p className="text-sm font-medium mb-4">Application fee: {formatPrice(job.applicationFeeAmount, job.applicationFeeCurrency)}</p>
+                )}
                 <Button className="w-full h-12 text-lg" disabled={job.status !== 'open'} asChild={job.status === 'open'}>
                   {job.status === 'open' ? (
                     <Link to={`/jobs/${job.slug}/apply`}>Apply Now</Link>
@@ -123,6 +129,11 @@ export default function JobDetails() {
                     <span>Position Filled</span>
                   )}
                 </Button>
+                {((job.allowWhatsAppApplication && job.applicationWhatsAppNumber) || (settings.jobContact?.jobWhatsAppEnabled && settings.jobContact?.jobWhatsAppNumber)) && whatsappUrl(job.applicationWhatsAppNumber || settings.jobContact?.jobWhatsAppNumber, (job.applicationWhatsAppMessage || settings.jobContact?.jobWhatsAppMessage || 'Hello Terqivo, I want to discuss the {jobTitle} opportunity.').replace('{jobTitle}', job.title)) && (
+                  <Button variant="outline" className="w-full mt-3" asChild>
+                    <a href={whatsappUrl(job.applicationWhatsAppNumber || settings.jobContact?.jobWhatsAppNumber, (job.applicationWhatsAppMessage || settings.jobContact?.jobWhatsAppMessage || '').replace('{jobTitle}', job.title))} target="_blank" rel="noreferrer"><MessageCircle className="mr-2 h-4 w-4" /> Chat on WhatsApp</a>
+                  </Button>
+                )}
               </div>
             </div>
           </div>

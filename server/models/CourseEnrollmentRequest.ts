@@ -26,6 +26,11 @@ const courseEnrollmentRequestSchema = new mongoose.Schema(
     adminNote: { type: String, trim: true, default: "" },
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "AdminUser" },
     reviewedAt: { type: Date },
+    lastEmailSentAt: { type: Date },
+    emailHistory: [{
+      subject: { type: String, trim: true }, templateKey: { type: String, trim: true }, recipient: { type: String, trim: true }, sentAt: { type: Date },
+      sentBy: { type: mongoose.Schema.Types.ObjectId, ref: "AdminUser" }, status: { type: String, enum: ["pending", "sent", "failed", "skipped", "disabled"] }, errorSummary: { type: String, trim: true },
+    }],
   },
   { timestamps: true },
 );

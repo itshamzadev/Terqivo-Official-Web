@@ -47,6 +47,11 @@ export default function AdminSettings() {
     courseWhatsAppNumber: '',
     courseWhatsAppMessage: 'Hello Terqivo, I want details about the {courseTitle} course.'
   });
+  const [jobContact, setJobContact] = useState({
+    jobWhatsAppEnabled: false,
+    jobWhatsAppNumber: '',
+    jobWhatsAppMessage: 'Hello Terqivo, I want to discuss the {jobTitle} opportunity.'
+  });
 
   const [systemInfo, setSystemInfo] = useState({
     environment: 'production',
@@ -77,6 +82,7 @@ export default function AdminSettings() {
         if (data.footer) setFooter(data.footer);
         if (data.social) setSocial(data.social);
         if (data.courseContact) setCourseContact(data.courseContact);
+        if (data.jobContact) setJobContact(data.jobContact);
         if (data.updatedAt) setSystemInfo(prev => ({ ...prev, lastUpdated: new Date(data.updatedAt).toLocaleString() }));
       }
     } catch (error) {
@@ -197,6 +203,7 @@ export default function AdminSettings() {
     { id: 'footer', label: 'Footer', icon: Layout },
     { id: 'social', label: 'Social Links', icon: Share2 },
     { id: 'courseContact', label: 'Course WhatsApp', icon: Globe },
+    { id: 'jobContact', label: 'Job WhatsApp', icon: Globe },
     { id: 'system', label: 'System Info', icon: Server },
   ];
 
@@ -605,6 +612,16 @@ export default function AdminSettings() {
                 <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WhatsApp number</label><input type="text" name="courseWhatsAppNumber" value={courseContact.courseWhatsAppNumber} onChange={(e) => handleChange('courseContact', setCourseContact, e)} placeholder="+92 300 1234567" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" /></div>
                 <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default message</label><textarea name="courseWhatsAppMessage" value={courseContact.courseWhatsAppMessage} onChange={(e) => handleChange('courseContact', setCourseContact, e)} rows={4} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" /><p className="text-xs text-gray-500 mt-1">Use {'{courseTitle}'} where the course title should be inserted.</p></div>
                 <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700"><button onClick={() => handleSave('courseContact', courseContact)} disabled={isSaving} className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"><Save className="w-4 h-4" /> Save Changes</button></div>
+              </div>
+            )}
+
+            {activeTab === 'jobContact' && (
+              <div className="space-y-6">
+                <div><h2 className="text-lg font-semibold text-gray-900 dark:text-white">Job WhatsApp</h2><p className="text-sm text-gray-500 dark:text-gray-400">Global fallback for job detail pages when a job has no specific number.</p></div>
+                <label className="flex items-center gap-3 text-sm"><input type="checkbox" name="jobWhatsAppEnabled" checked={jobContact.jobWhatsAppEnabled} onChange={(e) => handleChange('jobContact', setJobContact, e)} /> Enable global job WhatsApp</label>
+                <input type="text" name="jobWhatsAppNumber" value={jobContact.jobWhatsAppNumber} onChange={(e) => handleChange('jobContact', setJobContact, e)} placeholder="+92 300 1234567" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                <textarea name="jobWhatsAppMessage" value={jobContact.jobWhatsAppMessage} onChange={(e) => handleChange('jobContact', setJobContact, e)} rows={4} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" /><p className="text-xs text-gray-500">Use {'{jobTitle}'} where the job title should be inserted.</p>
+                <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700"><button onClick={() => handleSave('jobContact', jobContact)} disabled={isSaving} className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"><Save className="w-4 h-4" /> Save Changes</button></div>
               </div>
             )}
 

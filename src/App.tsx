@@ -41,6 +41,9 @@ import AdminApplications from './pages/admin/AdminApplications';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminCurrencies from './pages/admin/AdminCurrencies';
 import AdminPaymentAccounts from './pages/admin/AdminPaymentAccounts';
+import AdminEmailSettings from './pages/admin/AdminEmailSettings';
+import AdminEmailTemplates from './pages/admin/AdminEmailTemplates';
+import AdminEmailLogs from './pages/admin/AdminEmailLogs';
 
 // Placeholder components for public routes
 const Placeholder = ({ title }: { title: string }) => (
@@ -96,6 +99,9 @@ export default function App() {
           <Route path="enrollments" element={<AdminEnrollments />} />
           <Route path="applications" element={<AdminApplications />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="email-settings" element={<AdminEmailSettings />} />
+          <Route path="email-templates" element={<AdminEmailTemplates />} />
+          <Route path="email-logs" element={<AdminEmailLogs />} />
         </Route>
       </Routes>
     </Router>

@@ -1,215 +1,23 @@
 import { useEffect, useState } from 'react';
-import { Eye, Trash2, Download } from 'lucide-react';
+import { Eye, Trash2, Download, Send } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Card, CardContent } from '@/src/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/components/ui/dialog';
 import { toast } from 'sonner';
+import { formatPrice } from '@/src/lib/utils';
 
-interface Application {
-  _id: string;
-  job: string;
-  name: string;
-  email: string;
-  phone: string;
-  cvUrl: string;
-  coverLetter: string;
-  status: 'pending' | 'reviewed' | 'interviewing' | 'rejected' | 'hired';
-  createdAt: string;
-}
+const applicationStatuses = ['submitted', 'under-review', 'shortlisted', 'interview', 'selected', 'hired', 'rejected', 'withdrawn'];
+const paymentStatuses = ['not-required', 'unpaid', 'submitted', 'verified', 'rejected'];
 
 export default function AdminApplications() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [viewItem, setViewItem] = useState<Application | null>(null);
+  const [applications, setApplications] = useState<any[]>([]); const [loading, setLoading] = useState(true); const [view, setView] = useState<any>(null); const [search, setSearch] = useState(''); const [status, setStatus] = useState(''); const [paymentStatus, setPaymentStatus] = useState(''); const [reply, setReply] = useState('');
+  const fetchApplications = async () => { setLoading(true); const query = new URLSearchParams(); if (search) query.set('search', search); if (status) query.set('applicationStatus', status); if (paymentStatus) query.set('paymentStatus', paymentStatus); try { const res = await fetch(`/api/applications?${query}`); const result = await res.json(); if (res.ok) setApplications(result.data || []); } finally { setLoading(false); } };
+  useEffect(() => { void fetchApplications(); }, [status, paymentStatus]);
+  const update = async (id: string, values: Record<string, unknown>) => { const res = await fetch(`/api/applications/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) }); const result = await res.json(); if (!res.ok) throw new Error(result.message || 'Update failed'); setView(result.data); await fetchApplications(); toast.success('Application updated'); };
+  const sendReply = async () => { if (!view || !reply.trim()) return toast.error('Write a reply first'); const res = await fetch(`/api/applications/${view._id}/custom-reply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: reply }) }); const result = await res.json(); if (!res.ok) return toast.error(result.message); setView(result.data); setReply(''); toast.success(result.message); };
+  const remove = async (id: string) => { if (!confirm('Delete this application and its private files?')) return; const res = await fetch(`/api/applications/${id}`, { method: 'DELETE' }); if (res.ok) { setView(null); await fetchApplications(); toast.success('Application deleted'); } };
 
-  const fetchApplications = async () => {
-    try {
-      const res = await fetch('/api/applications');
-      if (res.ok) {
-        const result = await res.json();
-        setApplications(result.data || []);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchApplications();
-  }, []);
-
-  const handleUpdateStatus = async (id: string, newStatus: string) => {
-    try {
-      const res = await fetch(`/api/applications/${id}`, { 
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-      const result = await res.json();
-      if (res.ok && result.success) {
-        fetchApplications();
-        toast.success('Status updated');
-        if (viewItem && viewItem._id === id) {
-          setViewItem({ ...viewItem, status: newStatus as any });
-        }
-      } else {
-        toast.error(result.message || 'An error occurred');
-      }
-    } catch (error: any) {
-      toast.error(error.message);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this application?')) return;
-    try {
-      const res = await fetch(`/api/applications/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (res.ok && result.success) {
-        fetchApplications();
-        setViewItem(null);
-        toast.success('Application deleted');
-      } else {
-        toast.error(result.message || 'An error occurred');
-      }
-    } catch (error: any) {
-      toast.error(error.message);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-heading font-bold tracking-tight">Job Applications</h2>
-          <p className="text-muted-foreground">Review candidates for open positions.</p>
-        </div>
-      </div>
-
-      <Dialog open={!!viewItem} onOpenChange={(open) => !open && setViewItem(null)}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Application Details</DialogTitle>
-          </DialogHeader>
-          {viewItem && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-semibold block">Applicant:</span>
-                  <span>{viewItem.name}</span>
-                </div>
-                <div>
-                  <span className="font-semibold block">Job ID:</span>
-                  <span className="text-muted-foreground">{viewItem.job}</span>
-                </div>
-                <div>
-                  <span className="font-semibold block">Email:</span>
-                  <a href={`mailto:${viewItem.email}`} className="text-primary hover:underline">{viewItem.email}</a>
-                </div>
-                <div>
-                  <span className="font-semibold block">Phone:</span>
-                  <a href={`tel:${viewItem.phone}`} className="text-primary hover:underline">{viewItem.phone}</a>
-                </div>
-              </div>
-              
-              {viewItem.cvUrl && (
-                <div className="pt-4 border-t">
-                  <a href={viewItem.cvUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary hover:underline font-medium">
-                    <Download className="mr-2 h-4 w-4" /> View/Download CV
-                  </a>
-                </div>
-              )}
-              
-              <div className="pt-4 border-t">
-                <span className="font-semibold block mb-2">Cover Letter:</span>
-                <p className="whitespace-pre-wrap text-muted-foreground bg-muted p-4 rounded-md text-sm max-h-[200px] overflow-y-auto">
-                  {viewItem.coverLetter || 'No cover letter provided.'}
-                </p>
-              </div>
-              <div className="flex items-center justify-between pt-4 border-t">
-                <div className="space-x-2">
-                  <span className="text-sm font-medium">Update Status:</span>
-                  <select 
-                    value={viewItem.status}
-                    onChange={(e) => handleUpdateStatus(viewItem._id, e.target.value)}
-                    className="h-8 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="reviewed">Reviewed</option>
-                    <option value="interviewing">Interviewing</option>
-                    <option value="hired">Hired</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                </div>
-                <Button variant="destructive" onClick={() => handleDelete(viewItem._id)}>
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Card>
-        <CardContent className="p-0">
-          <div className="rounded-md border overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Applicant</th>
-                  <th className="px-6 py-4 font-medium">Job</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium">Date</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">Loading applications...</td></tr>
-                ) : applications.length === 0 ? (
-                  <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No applications found.</td></tr>
-                ) : (
-                  applications.map((item) => (
-                    <tr key={item._id} className="border-b last:border-0 hover:bg-muted/30">
-                      <td className="px-6 py-4">
-                        <p className="text-foreground font-medium">{item.name}</p>
-                        <p className="text-muted-foreground text-xs mt-0.5">{item.email}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="truncate max-w-[150px]">{item.job}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          item.status === 'reviewed' ? 'bg-blue-100 text-blue-800' :
-                          item.status === 'interviewing' ? 'bg-purple-100 text-purple-800' :
-                          item.status === 'hired' ? 'bg-green-100 text-green-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => setViewItem(item)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item._id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <div className="space-y-6"><div><h2 className="text-3xl font-heading font-bold tracking-tight">Job Applications</h2><p className="text-muted-foreground">Review candidates, payments, and application status.</p></div><div className="flex flex-wrap gap-3"><input value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && void fetchApplications()} placeholder="Search applicant, email, phone, job, or number" className="h-10 min-w-[280px] rounded-md border border-input bg-background px-3 text-sm" /><select value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="">All application statuses</option>{applicationStatuses.map((item) => <option key={item}>{item}</option>)}</select><select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="">All payment statuses</option>{paymentStatuses.map((item) => <option key={item}>{item}</option>)}</select><Button variant="outline" onClick={() => void fetchApplications()}>Search</Button></div>
+    <Dialog open={!!view} onOpenChange={(open) => !open && setView(null)}><DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Application {view?.applicationNumber || ''}</DialogTitle></DialogHeader>{view && <div className="space-y-5 text-sm"><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div><b>Applicant</b><p>{view.applicantName || view.name}</p><p>{view.email}</p><p>{view.phone}</p><p>{view.currentCity}{view.country ? `, ${view.country}` : ''}</p></div><div><b>Job</b><p>{view.jobTitleSnapshot || view.job}</p><p>Submitted {new Date(view.createdAt).toLocaleString()}</p><p>Payment: {view.paymentStatus}</p><p>{formatPrice(view.paymentAmountSnapshot, view.currencySnapshot)}</p></div></div><div className="flex flex-wrap gap-3">{view.resumePath || view.cvUrl ? <a className="text-primary inline-flex items-center" href={view.resumePath ? `/api/applications/${view._id}/resume` : view.cvUrl} target="_blank" rel="noreferrer"><Download className="mr-2 h-4 w-4" /> Resume</a> : null}{view.paymentScreenshotPath && <a className="text-primary" href={`/api/applications/${view._id}/payment-screenshot`} target="_blank" rel="noreferrer">Open payment screenshot</a>}</div><div><b>Cover letter</b><p className="whitespace-pre-wrap rounded-md bg-muted p-4 mt-2">{view.coverLetter || 'No cover letter provided.'}</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-3"><label>Application status<select value={view.applicationStatus || 'submitted'} onChange={(e) => void update(view._id, { applicationStatus: e.target.value })} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3"><option value="submitted">submitted</option>{applicationStatuses.slice(1).map((item) => <option key={item}>{item}</option>)}</select></label><label>Payment status<select value={view.paymentStatus || 'not-required'} onChange={(e) => void update(view._id, { paymentStatus: e.target.value })} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3">{paymentStatuses.map((item) => <option key={item}>{item}</option>)}</select></label></div><textarea value={view.internalNote || ''} onChange={(e) => setView({ ...view, internalNote: e.target.value })} onBlur={() => void update(view._id, { internalNote: view.internalNote })} placeholder="Internal note" className="min-h-20 w-full rounded-md border border-input bg-background p-3" /><div><label className="font-medium">Applicant reply</label><textarea value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Write a reply email" className="mt-2 min-h-24 w-full rounded-md border border-input bg-background p-3" /><Button className="mt-2" onClick={() => void sendReply()}><Send className="mr-2 h-4 w-4" /> Send Reply</Button></div><Button variant="destructive" onClick={() => void remove(view._id)}><Trash2 className="mr-2 h-4 w-4" /> Delete Application</Button></div>}</DialogContent></Dialog>
+    <Card><CardContent className="p-0"><div className="rounded-md border overflow-x-auto"><table className="w-full text-sm text-left"><thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b"><tr><th className="px-6 py-4">Applicant</th><th className="px-6 py-4">Job</th><th className="px-6 py-4">Payment</th><th className="px-6 py-4">Status</th><th className="px-6 py-4">Date</th><th className="px-6 py-4 text-right">Actions</th></tr></thead><tbody>{loading ? <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">Loading applications...</td></tr> : applications.length === 0 ? <tr><td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">No applications found.</td></tr> : applications.map((item) => <tr key={item._id} className="border-b last:border-0 hover:bg-muted/30"><td className="px-6 py-4"><p className="font-medium">{item.applicantName || item.name}</p><p className="text-xs text-muted-foreground">{item.applicationNumber || item.email}</p></td><td className="px-6 py-4">{item.jobTitleSnapshot || item.job || '—'}</td><td className="px-6 py-4"><span className="text-xs">{item.paymentStatus || 'not-required'}</span><br />{formatPrice(item.paymentAmountSnapshot, item.currencySnapshot)}</td><td className="px-6 py-4">{item.applicationStatus || item.status}</td><td className="px-6 py-4 text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</td><td className="px-6 py-4 text-right"><Button variant="ghost" size="icon" onClick={() => setView(item)}><Eye className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => void remove(item._id)}><Trash2 className="h-4 w-4" /></Button></td></tr>)}</tbody></table></div></CardContent></Card></div>;
 }

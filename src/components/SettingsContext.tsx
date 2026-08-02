@@ -47,6 +47,11 @@ export interface SiteSettings {
     courseWhatsAppNumber: string;
     courseWhatsAppMessage: string;
   };
+  jobContact: {
+    jobWhatsAppEnabled: boolean;
+    jobWhatsAppNumber: string;
+    jobWhatsAppMessage: string;
+  };
 }
 
 const defaultSettings: SiteSettings = {
@@ -90,6 +95,11 @@ const defaultSettings: SiteSettings = {
     courseWhatsAppEnabled: false,
     courseWhatsAppNumber: '',
     courseWhatsAppMessage: 'Hello Terqivo, I want details about the {courseTitle} course.'
+  }
+  ,jobContact: {
+    jobWhatsAppEnabled: false,
+    jobWhatsAppNumber: '',
+    jobWhatsAppMessage: 'Hello Terqivo, I want to discuss the {jobTitle} opportunity.'
   }
 };
 

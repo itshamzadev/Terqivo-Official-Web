@@ -1,170 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useForm as useRHForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
+import { formatPrice } from '@/src/lib/utils';
 
-const applySchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Valid phone number required"),
-  cvUrl: z.string().url("Valid URL for CV/Resume required"),
-  coverLetter: z.string().min(10, "Cover letter is required")
+const schema = z.object({
+  fullName: z.string().min(2, 'Full name is required'), email: z.string().email('Invalid email address'), phone: z.string().min(5, 'Phone number is required'), currentCity: z.string().min(2, 'Current city is required'), country: z.string().optional(), coverLetter: z.string().min(10, 'Cover letter is required'), portfolioUrl: z.string().url('Enter a valid URL').or(z.literal('')).optional(), linkedInUrl: z.string().url('Enter a valid URL').or(z.literal('')).optional(), githubUrl: z.string().url('Enter a valid URL').or(z.literal('')).optional(), applicantMessage: z.string().optional(), paymentAccountId: z.string().optional(), transactionId: z.string().optional(), wantsToPay: z.boolean().optional(),
 });
-
-type ApplyFormValues = z.infer<typeof applySchema>;
+type Values = z.infer<typeof schema>;
 
 export default function JobApply() {
-  const { slug } = useParams();
-  const [job, setJob] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const { slug } = useParams(); const [job, setJob] = useState<any>(null); const [accounts, setAccounts] = useState<any[]>([]); const [loading, setLoading] = useState(true); const [submitting, setSubmitting] = useState(false); const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle'); const [reference, setReference] = useState(''); const [serverError, setServerError] = useState('');
+  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { wantsToPay: false } });
+  const wantsToPay = watch('wantsToPay'); const paymentRequired = Boolean(job?.applicationFeeEnabled && job?.applicationFeeRequired); const paymentActive = Boolean(job?.applicationFeeEnabled && (paymentRequired || wantsToPay));
+  const availableAccounts = useMemo(() => { const allowed = (job?.allowedPaymentAccountIds || []).map(String); return allowed.length ? accounts.filter((account) => allowed.includes(String(account._id))) : accounts; }, [accounts, job]);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useRHForm<ApplyFormValues>({
-    resolver: zodResolver(applySchema)
-  });
+  useEffect(() => { Promise.all([fetch(`/api/jobs/${slug}`).then((r) => r.json()), fetch('/api/payment-accounts/active').then((r) => r.json())]).then(([jobResult, accountResult]) => { setJob(jobResult.data || null); setAccounts(accountResult.data || []); }).catch(() => undefined).finally(() => setLoading(false)); }, [slug]);
 
-  useEffect(() => {
-    fetch(`/api/jobs/${slug}`)
-      .then(res => res.json())
-      .then(data => {
-        setJob(data);
-        setIsLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setIsLoading(false);
-      });
-  }, [slug]);
-
-  const onSubmit = async (data: ApplyFormValues) => {
-    setIsSubmitting(true);
-    setSubmitStatus('idle');
-    try {
-      const payload = {
-        ...data,
-        jobId: job._id
-      };
-      
-      const res = await fetch('/api/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) throw new Error('Failed to submit application');
-      
-      setSubmitStatus('success');
-      reset();
-    } catch (error) {
-      console.error(error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const copy = async (value: string) => { if (!value) return; await navigator.clipboard?.writeText(value); };
+  const onSubmit = async (values: Values) => {
+    setSubmitting(true); setStatus('idle'); setServerError(''); const form = new FormData(); Object.entries(values).forEach(([key, value]) => { if (key !== 'wantsToPay' && value !== undefined && value !== '') form.append(key, String(value)); }); form.set('jobId', job._id); form.set('wantsToPay', paymentActive ? 'true' : 'false');
+    const resume = (document.querySelector<HTMLInputElement>('input[name="resume"]')?.files || [])[0]; const screenshot = (document.querySelector<HTMLInputElement>('input[name="paymentScreenshot"]')?.files || [])[0]; if (resume) form.append('resume', resume); if (screenshot) form.append('paymentScreenshot', screenshot);
+    try { const response = await fetch('/api/applications', { method: 'POST', body: form }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.message || 'Could not submit application'); setReference(result.data?.applicationNumber || ''); setStatus('success'); reset(); } catch (error: any) { setServerError(error.message); setStatus('error'); } finally { setSubmitting(false); }
   };
 
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!job) return <div className="container mx-auto px-4 py-20 text-center"><h1 className="text-3xl font-heading font-bold">Job Not Found</h1><Button className="mt-6" asChild><Link to="/jobs">Back to Careers</Link></Button></div>;
+  if (status === 'success') return <div className="container mx-auto px-4 py-20"><div className="max-w-3xl mx-auto bg-green-50 border border-green-200 rounded-[24px] p-12 text-center"><CheckCircle2 className="mx-auto h-16 w-16 text-green-500 mb-6" /><h2 className="text-3xl font-heading font-bold text-green-900 mb-4">Application Submitted</h2><p className="text-green-800 mb-3">Your application is pending review.</p>{reference && <p className="font-semibold text-green-900 mb-8">Application reference: {reference}</p>}<Button asChild><Link to="/jobs">View Other Openings</Link></Button></div></div>;
 
-  if (!job) {
-    return (
-      <div className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-3xl font-heading font-bold">Job Not Found</h1>
-        <Button className="mt-6" asChild><Link to="/jobs">Back to Careers</Link></Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-20">
-      <div className="max-w-3xl mx-auto">
-        <Button variant="ghost" className="mb-6 -ml-4 text-muted-foreground" asChild>
-          <Link to={`/jobs/${slug}`}><ArrowLeft className="mr-2 h-4 w-4" /> Back to Job Details</Link>
-        </Button>
-        
-        <div className="mb-10">
-          <h1 className="text-4xl font-heading font-bold mb-2">Job Application</h1>
-          <p className="text-xl text-muted-foreground">Applying for: <span className="font-semibold text-foreground">{job.title}</span></p>
-        </div>
-
-        {submitStatus === 'success' ? (
-          <div className="bg-green-50 border border-green-200 rounded-[24px] p-12 text-center">
-            <CheckCircle2 className="mx-auto h-16 w-16 text-green-500 mb-6" />
-            <h2 className="text-3xl font-heading font-bold text-green-900 mb-4">Application Submitted</h2>
-            <p className="text-green-800 mb-8 max-w-md mx-auto">
-              Thank you for applying to TERQIVO. Our hiring team will review your application and get back to you if your profile matches our requirements.
-            </p>
-            <div className="flex justify-center">
-              <Button asChild><Link to="/jobs">View Other Openings</Link></Button>
-            </div>
-          </div>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Submit Your Application</CardTitle>
-              <CardDescription>Please provide your contact information and a link to your resume/CV.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Full Name</label>
-                    <Input {...register("name")} placeholder="Jane Doe" />
-                    {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Email Address</label>
-                    <Input {...register("email")} type="email" placeholder="jane@example.com" />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Phone Number</label>
-                    <Input {...register("phone")} placeholder="+1 (555) 000-0000" />
-                    {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Resume/CV URL</label>
-                    <Input {...register("cvUrl")} placeholder="https://linkedin.com/in/... or Google Drive link" />
-                    {errors.cvUrl && <p className="text-sm text-destructive">{errors.cvUrl.message}</p>}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Cover Letter / Note</label>
-                  <textarea 
-                    {...register("coverLetter")}
-                    className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder="Tell us why you're a great fit for TERQIVO..."
-                  />
-                  {errors.coverLetter && <p className="text-sm text-destructive">{errors.coverLetter.message}</p>}
-                </div>
-
-                {submitStatus === 'error' && (
-                  <div className="p-4 bg-red-50 text-red-700 rounded-md border border-red-200">
-                    There was an error submitting your application. Please try again.
-                  </div>
-                )}
-
-                <div className="pt-4 border-t flex justify-end">
-                  <Button type="submit" size="lg" disabled={isSubmitting}>
-                    {isSubmitting ? 'Submitting...' : 'Submit Application'}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </div>
-  );
+  return <div className="container mx-auto px-4 py-20"><div className="max-w-3xl mx-auto"><Button variant="ghost" className="mb-6 -ml-4 text-muted-foreground" asChild><Link to={`/jobs/${slug}`}><ArrowLeft className="mr-2 h-4 w-4" /> Back to Job Details</Link></Button><div className="mb-10"><h1 className="text-4xl font-heading font-bold mb-2">Job Application</h1><p className="text-xl text-muted-foreground">Applying for: <span className="font-semibold text-foreground">{job.title}</span></p></div><Card><CardHeader><CardTitle>Submit Your Application</CardTitle><CardDescription>Please provide your information and resume. Your application remains pending until reviewed.</CardDescription></CardHeader><CardContent><form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="space-y-2"><label className="text-sm font-medium">Full Name</label><Input {...register('fullName')} />{errors.fullName && <p className="text-sm text-destructive">{errors.fullName.message}</p>}</div><div className="space-y-2"><label className="text-sm font-medium">Email Address</label><Input {...register('email')} type="email" />{errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}</div></div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6"><div className="space-y-2"><label className="text-sm font-medium">Phone</label><Input {...register('phone')} />{errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}</div><div className="space-y-2"><label className="text-sm font-medium">Current City</label><Input {...register('currentCity')} />{errors.currentCity && <p className="text-sm text-destructive">{errors.currentCity.message}</p>}</div><div className="space-y-2"><label className="text-sm font-medium">Country (optional)</label><Input {...register('country')} /></div></div>
+    <div className="space-y-2"><label className="text-sm font-medium">Resume (PDF, DOC, or DOCX)</label><input name="resume" type="file" accept=".pdf,.doc,.docx" required className="block w-full text-sm" /></div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6"><div className="space-y-2"><label className="text-sm font-medium">Portfolio URL (optional)</label><Input {...register('portfolioUrl')} /></div><div className="space-y-2"><label className="text-sm font-medium">LinkedIn URL (optional)</label><Input {...register('linkedInUrl')} /></div><div className="space-y-2"><label className="text-sm font-medium">GitHub URL (optional)</label><Input {...register('githubUrl')} /></div></div>
+    <div className="space-y-2"><label className="text-sm font-medium">Cover Letter</label><textarea {...register('coverLetter')} className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />{errors.coverLetter && <p className="text-sm text-destructive">{errors.coverLetter.message}</p>}</div>
+    {job.applicationFeeEnabled && <div className="rounded-xl border p-4 space-y-4"><p className="font-medium">Application fee: {formatPrice(job.applicationFeeAmount, job.applicationFeeCurrencyId)}</p>{!paymentRequired && <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...register('wantsToPay')} /> Submit payment evidence now (optional)</label>}{paymentActive && <><div className="space-y-2"><label className="text-sm font-medium">Payment account</label><select {...register('paymentAccountId')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required><option value="">Select payment account</option>{availableAccounts.map((account) => <option key={account._id} value={account._id}>{account.accountTitle} — {account.paymentMethod}</option>)}</select></div>{watch('paymentAccountId') && <div className="text-sm text-muted-foreground space-y-1">{(() => { const account = availableAccounts.find((entry) => entry._id === watch('paymentAccountId')); if (!account) return null; return <>{[account.accountNumber, account.iban, account.walletNumber].filter(Boolean).map((value: string) => <div key={value} className="flex items-center justify-between gap-3"><span>{value}</span><button type="button" className="text-primary" onClick={() => copy(value)} aria-label="Copy payment detail"><Copy className="h-4 w-4" /></button></div>)}</>; })()}</div>}<div className="space-y-2"><label className="text-sm font-medium">Transaction/reference number {job.requireTransactionId ? '' : '(if available)'}</label><Input {...register('transactionId')} required={job.requireTransactionId} /></div><div className="space-y-2"><label className="text-sm font-medium">Payment screenshot {job.requirePaymentScreenshot || paymentRequired ? '' : '(optional)'}</label><input name="paymentScreenshot" type="file" accept=".jpg,.jpeg,.png,.webp" required={job.requirePaymentScreenshot || paymentRequired} className="block w-full text-sm" /></div></>}</div>}
+    <div className="space-y-2"><label className="text-sm font-medium">Message (optional)</label><textarea {...register('applicantMessage')} className="flex min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" /></div>{job.applicationInstructions && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{job.applicationInstructions}</p>}{serverError && <div className="p-4 bg-red-50 text-red-700 rounded-md border border-red-200">{serverError}</div>}<div className="pt-4 border-t flex justify-end"><Button type="submit" size="lg" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Application'}</Button></div>
+  </form></CardContent></Card></div></div>;
 }

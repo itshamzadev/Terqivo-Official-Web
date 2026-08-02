@@ -20,7 +20,14 @@ router.get('/public', async (req, res) => {
         seo: settings.seo,
         footer: settings.footer,
         social: settings.social,
-        courseContact: settings.courseContact
+        courseContact: settings.courseContact,
+        jobContact: settings.jobContact,
+        email: {
+          companyName: settings.email?.companyName,
+          websiteUrl: settings.email?.websiteUrl,
+          supportPhone: settings.email?.supportPhone,
+          supportWhatsApp: settings.email?.supportWhatsApp,
+        }
       }
     });
   } catch (error: any) {
@@ -38,8 +45,8 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// PUT admin settings (auth required)
-router.put('/', authenticate, async (req, res) => {
+// PUT/PATCH admin settings (auth required)
+const updateSettings = async (req: any, res: any) => {
   try {
     const settings = await SiteSettings.getSettings();
     
@@ -52,6 +59,12 @@ router.put('/', authenticate, async (req, res) => {
     if (req.body.footer) settings.footer = { ...settings.footer, ...req.body.footer };
     if (req.body.social) settings.social = { ...settings.social, ...req.body.social };
     if (req.body.courseContact) settings.courseContact = { ...settings.courseContact, ...req.body.courseContact };
+    if (req.body.jobContact) settings.jobContact = { ...settings.jobContact, ...req.body.jobContact };
+    if (req.body.email) {
+      const allowed = ['emailEnabled', 'senderName', 'senderEmail', 'replyToEmail', 'adminNotificationEmail', 'companyName', 'companyLogo', 'websiteUrl', 'supportPhone', 'supportWhatsApp', 'emailFooterText', 'emailSignature', 'sendAdminNotifications', 'sendApplicantConfirmations', 'sendCourseEnrollmentEmails', 'sendJobApplicationEmails', 'sendContactFormEmails', 'sendPaymentStatusEmails'];
+      const safeEmail = Object.fromEntries(Object.entries(req.body.email).filter(([key]) => allowed.includes(key)));
+      settings.email = { ...settings.email, ...safeEmail };
+    }
 
     await settings.save();
     
@@ -59,6 +72,9 @@ router.put('/', authenticate, async (req, res) => {
   } catch (error: any) {
     res.status(500).json({ success: false, message: 'Failed to update settings', error: error.message });
   }
-});
+};
+
+router.put('/', authenticate, updateSettings);
+router.patch('/', authenticate, updateSettings);
 
 export default router;

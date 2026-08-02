@@ -39,3 +39,12 @@ export async function removeUnusedUpload(value?: string, original?: string) {
     // Cleanup is best-effort; the protected backend also refuses shared files.
   }
 }
+
+export function normalizeWhatsAppNumber(value?: string | null) {
+  return (value || "").replace(/[\s()+\-]/g, "").replace(/[^0-9]/g, "");
+}
+
+export function whatsappUrl(number: string | undefined, message: string) {
+  const normalized = normalizeWhatsAppNumber(number);
+  return normalized ? `https://wa.me/${normalized}?text=${encodeURIComponent(message)}` : "";
+}

@@ -17,6 +17,12 @@ const uploadFolderAliases: Record<string, string> = {
   payment: "payment-screenshots",
 };
 
+const privateUploadFolderAliases: Record<string, string> = {
+  "job-resumes": "job-resumes",
+  "job-payment-screenshots": "job-payment-screenshots",
+  "course-payment-screenshots": "course-payment-screenshots",
+};
+
 export function getUploadsRoot() {
   return path.resolve(process.env.UPLOAD_DIR || path.join(process.cwd(), "public", "uploads"));
 }
@@ -42,6 +48,71 @@ export function createImageUpload(folder: string, maxSize = 5 * 1024 * 1024) {
         cb(new Error("Only JPG, JPEG, PNG, and WEBP images are allowed."));
         return;
       }
+      cb(null, true);
+    },
+  });
+}
+
+export function getPrivateUploadsRoot() {
+  return path.resolve(path.join(getUploadsRoot(), "private"));
+}
+
+export function createPrivateUpload(folder: string, maxSize = 8 * 1024 * 1024) {
+  const allowed = new Map<string, string[]>([
+    ["application/pdf", [".pdf"]],
+    ["application/msword", [".doc"]],
+    ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", [".docx"]],
+    ["image/jpeg", [".jpg", ".jpeg"]],
+    ["image/png", [".png"]],
+    ["image/webp", [".webp"]],
+  ]);
+  return multer({
+    storage: multer.diskStorage({
+      destination: (_req, _file, cb) => {
+        const destination = path.join(getPrivateUploadsRoot(), folder);
+        fs.mkdirSync(destination, { recursive: true });
+        cb(null, destination);
+      },
+      filename: (_req, file, cb) => {
+        const extension = path.extname(file.originalname).toLowerCase() === ".jpeg" ? ".jpg" : path.extname(file.originalname).toLowerCase();
+        cb(null, `${Date.now()}-${crypto.randomBytes(12).toString("hex")}${extension}`);
+      },
+    }),
+    limits: { fileSize: maxSize },
+    fileFilter: (_req, file, cb) => {
+      const extension = path.extname(file.originalname).toLowerCase();
+      const allowedExtensions = allowed.get(file.mimetype);
+      if (!allowedExtensions || !allowedExtensions.includes(extension)) {
+        cb(new Error("Unsupported file type."));
+        return;
+      }
+      cb(null, true);
+    },
+  });
+}
+
+export function createPrivateApplicationUpload(maxSize = 8 * 1024 * 1024) {
+  const imageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+  const resumeTypes = new Map([
+    ["application/pdf", [".pdf"]],
+    ["application/msword", [".doc"]],
+    ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", [".docx"]],
+  ]);
+  return multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        const folder = file.fieldname === "paymentScreenshot" ? "job-payment-screenshots" : "job-resumes";
+        const destination = path.join(getPrivateUploadsRoot(), folder);
+        fs.mkdirSync(destination, { recursive: true });
+        cb(null, destination);
+      },
+      filename: (_req, file, cb) => cb(null, `${Date.now()}-${crypto.randomBytes(12).toString("hex")}${path.extname(file.originalname).toLowerCase() === ".jpeg" ? ".jpg" : path.extname(file.originalname).toLowerCase()}`),
+    }),
+    limits: { fileSize: maxSize },
+    fileFilter: (_req, file, cb) => {
+      const extension = path.extname(file.originalname).toLowerCase();
+      const allowedExtensions = file.fieldname === "paymentScreenshot" ? (imageTypes.has(file.mimetype) ? [".jpg", ".jpeg", ".png", ".webp"] : []) : (resumeTypes.get(file.mimetype) || []);
+      if (!allowedExtensions.includes(extension)) { cb(new Error(file.fieldname === "paymentScreenshot" ? "Payment screenshots must be JPG, PNG, or WEBP." : "Resumes must be PDF, DOC, or DOCX.")); return; }
       cb(null, true);
     },
   });
@@ -123,6 +194,38 @@ export function removeLocalUpload(value: unknown, folder?: string) {
     if (fs.existsSync(resolved)) fs.unlinkSync(resolved);
   } catch (error) {
     console.warn("Could not remove upload:", error);
+  }
+}
+
+export function privateUploadPath(folder: string, filename: string) {
+  if (!privateUploadFolderAliases[folder] || !/^[a-zA-Z0-9._-]+$/.test(filename)) return null;
+  const root = path.resolve(getPrivateUploadsRoot());
+  const resolved = path.resolve(root, privateUploadFolderAliases[folder], filename);
+  if (!resolved.startsWith(`${root}${path.sep}`)) return null;
+  return resolved;
+}
+
+export function privateUploadReference(folder: string, filename: string) {
+  if (!privateUploadPath(folder, filename)) return "";
+  return `private/${folder}/${filename}`;
+}
+
+export function parsePrivateUploadReference(value: unknown) {
+  if (typeof value !== "string") return null;
+  const normalized = value.replace(/\\/g, "/").replace(/^\/+/, "");
+  const match = normalized.match(/^private\/(job-resumes|job-payment-screenshots|course-payment-screenshots)\/([a-zA-Z0-9._-]+)$/);
+  return match ? { folder: match[1], filename: match[2] } : null;
+}
+
+export function removePrivateUpload(value: unknown) {
+  const parsed = parsePrivateUploadReference(value);
+  if (!parsed) return;
+  const resolved = privateUploadPath(parsed.folder, parsed.filename);
+  if (!resolved) return;
+  try {
+    if (fs.existsSync(resolved)) fs.unlinkSync(resolved);
+  } catch (error) {
+    console.warn("Could not remove private upload:", error);
   }
 }
 

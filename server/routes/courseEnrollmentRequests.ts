@@ -5,11 +5,12 @@ import { Currency } from "../models/Currency";
 import { PaymentAccount } from "../models/PaymentAccount";
 import { CourseEnrollmentRequest } from "../models/CourseEnrollmentRequest";
 import { authenticate } from "../middleware/auth";
-import { createImageUpload, removeLocalUpload, uploadUrl, validateUploadedImage } from "../utils/uploads";
+import { createPrivateUpload, parsePrivateUploadReference, privateUploadPath, localUploadFilePath, removePrivateUpload, removeLocalUpload, uploadUrl, validateUploadedImage } from "../utils/uploads";
+import { sendTemplateEmail } from "../utils/emailService";
 import crypto from "crypto";
 
 const router = Router();
-const screenshotUpload = createImageUpload("payment-screenshots", 5 * 1024 * 1024);
+const screenshotUpload = createPrivateUpload("course-payment-screenshots", 5 * 1024 * 1024);
 const idIsValid = (id: string) => mongoose.isValidObjectId(id);
 
 router.post("/", (req, res, next) => {
@@ -25,7 +26,7 @@ router.post("/", (req, res, next) => {
     if (!idIsValid(courseId) || !idIsValid(paymentAccountId)) return res.status(400).json({ success: false, message: "Course and payment account are required" });
     if (!req.file) return res.status(400).json({ success: false, message: "Payment screenshot is required" });
     if (!await validateUploadedImage(req.file)) {
-      removeLocalUpload(uploadUrl("payment-screenshots", req.file.filename), "payment-screenshots");
+      removePrivateUpload(`private/course-payment-screenshots/${req.file.filename}`);
       return res.status(400).json({ success: false, message: "The payment screenshot is not a valid JPG, PNG, or WEBP image." });
     }
     if (!fullName?.trim() || !/^\S+@\S+\.\S+$/.test(String(email)) || !phone?.trim()) return res.status(400).json({ success: false, message: "Name, email, and phone are required" });
@@ -48,13 +49,30 @@ router.post("/", (req, res, next) => {
       paymentAccountId, paymentMethodSnapshot: account.paymentMethod, paymentAccountSnapshot: `${account.accountTitle}${paymentValues ? `: ${paymentValues}` : ""}`,
       amountSnapshot: course.salePrice ?? course.price ?? 0,
       currencySnapshot: currency ? { name: currency.name, code: currency.code, symbol: currency.symbol, prefix: currency.prefix, suffix: currency.suffix } : {},
-      transactionId: String(transactionId || "N/A").trim(), paymentScreenshot: uploadUrl("payment-screenshots", req.file.filename), message: String(message || "").trim(), status: "pending",
+      transactionId: String(transactionId || "N/A").trim(), paymentScreenshot: `private/course-payment-screenshots/${req.file.filename}`, message: String(message || "").trim(), status: "pending",
     });
+    void notifyCourseRequest(item).catch((error) => console.warn("Course enrollment email notification failed:", error?.message || "unknown error"));
     res.status(201).json({ success: true, message: "Enrollment request submitted", data: { requestNumber: item.requestNumber } });
   } catch (error: any) {
+    if (req.file) removePrivateUpload(`private/course-payment-screenshots/${req.file.filename}`);
     res.status(400).json({ success: false, message: error?.message || "Could not submit enrollment request" });
   }
 });
+
+async function notifyCourseRequest(item: any) {
+  const data = { applicantName: item.applicantName, email: item.email, phone: item.phone, courseTitle: item.courseTitleSnapshot, requestNumber: item.requestNumber, amount: item.amountSnapshot, currency: item.currencySnapshot?.code || "", paymentMethod: item.paymentMethodSnapshot, transactionId: item.transactionId, status: item.status, adminUrl: `${process.env.APP_URL || ""}/admin/enrollments` };
+  const settings = await (await import("../models/SiteSettings")).SiteSettings.getSettings();
+  if (settings.email?.sendCourseEnrollmentEmails === false) return;
+  const applicant = await sendTemplateEmail({ to: item.email, templateKey: "course_enrollment_received", data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), category: "course" });
+  if (settings.email?.sendAdminNotifications !== false) await sendTemplateEmail({ to: settings.email?.adminNotificationEmail || process.env.ADMIN_NOTIFICATION_EMAIL || "support@terqivo.com", templateKey: "course_enrollment_admin_notification", data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), category: "course" });
+  await CourseEnrollmentRequest.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: "Course enrollment received", templateKey: "course_enrollment_received", recipient: item.email, sentAt: new Date(), status: applicant.status, errorSummary: applicant.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
+}
+
+async function notifyCourseEvent(item: any, templateKey: string, data: Record<string, unknown>, sentBy?: string) {
+  const result = await sendTemplateEmail({ to: item.email, templateKey, data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), sentBy, category: templateKey.includes("payment") ? "payment" : "course" });
+  await CourseEnrollmentRequest.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: templateKey, templateKey, recipient: item.email, sentAt: new Date(), sentBy, status: result.status, errorSummary: result.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
+  return result;
+}
 
 router.get("/", authenticate, async (req, res) => {
   const { status, search } = req.query;
@@ -75,6 +93,16 @@ router.get("/:id", authenticate, async (req, res) => {
   res.json({ success: true, data: item });
 });
 
+router.get("/:id/payment-screenshot", authenticate, async (req, res) => {
+  if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid request id" });
+  const item: any = await CourseEnrollmentRequest.findById(req.params.id).lean();
+  if (!item?.paymentScreenshot) return res.status(404).json({ success: false, message: "Payment screenshot not found" });
+  const parsed = parsePrivateUploadReference(item.paymentScreenshot);
+  const file = parsed ? privateUploadPath(parsed.folder, parsed.filename) : localUploadFilePath(item.paymentScreenshot, "payment-screenshots");
+  if (!file) return res.status(404).json({ success: false, message: "Payment screenshot not found" });
+  res.sendFile(file);
+});
+
 router.patch("/:id/status", authenticate, async (req: any, res) => {
   if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid request id" });
   const status = req.body.status;
@@ -87,6 +115,7 @@ router.patch("/:id/status", authenticate, async (req: any, res) => {
   current.reviewedBy = req.user?.id;
   current.reviewedAt = new Date();
   await current.save();
+  void notifyCourseEvent(current, status === "approved" ? "course_enrollment_approved" : "course_enrollment_rejected", { applicantName: current.applicantName, courseTitle: current.courseTitleSnapshot, requestNumber: current.requestNumber, adminNote: current.adminNote }, req.user?.id).catch(() => undefined);
   res.json({ success: true, data: current, message: `Request ${status}` });
 });
 

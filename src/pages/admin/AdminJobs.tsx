@@ -21,11 +21,13 @@ export default function AdminJobs() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currencies, setCurrencies] = useState<any[]>([]);
+  const [paymentAccounts, setPaymentAccounts] = useState<any[]>([]);
   const { register, handleSubmit, reset, setValue } = useForm();
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch('/api/jobs');
+      const res = await fetch('/api/jobs/admin');
       if (res.ok) {
         const result = await res.json();
         setJobs(result.data || []);
@@ -39,6 +41,7 @@ export default function AdminJobs() {
 
   useEffect(() => {
     fetchJobs();
+    Promise.all([fetch('/api/currencies').then((res) => res.json()), fetch('/api/payment-accounts').then((res) => res.json())]).then(([currencyResult, accountResult]) => { setCurrencies(currencyResult.data || []); setPaymentAccounts(accountResult.data || []); }).catch(() => undefined);
   }, []);
 
   const openEdit = (job: Job) => {
@@ -146,6 +149,16 @@ export default function AdminJobs() {
                   className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder="Detailed description"
                 ></textarea>
+              </div>
+              <div className="border-t pt-4 space-y-4">
+                <h3 className="font-medium">Application payment</h3>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...register('applicationFeeEnabled')} /> Enable application fee</label>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...register('applicationFeeRequired')} /> Payment required to apply</label>
+                <div className="grid grid-cols-2 gap-4"><Input {...register('applicationFeeAmount', { valueAsNumber: true })} type="number" min="0" placeholder="Fee amount" /><select {...register('applicationFeeCurrencyId')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Select currency</option>{currencies.filter((currency) => currency.isActive).map((currency) => <option key={currency._id} value={currency._id}>{currency.code} — {currency.name}</option>)}</select></div>
+                <div className="space-y-2"><label className="text-sm font-medium">Allowed payment accounts (leave empty for all active accounts)</label><select multiple {...register('allowedPaymentAccountIds')} className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">{paymentAccounts.filter((account) => account.isActive).map((account) => <option key={account._id} value={account._id}>{account.accountTitle} — {account.paymentMethod}</option>)}</select></div>
+                <div className="grid grid-cols-2 gap-3 text-sm"><label className="flex items-center gap-2"><input type="checkbox" {...register('requirePaymentScreenshot')} /> Require screenshot</label><label className="flex items-center gap-2"><input type="checkbox" {...register('requireTransactionId')} /> Require transaction ID</label><label className="flex items-center gap-2"><input type="checkbox" {...register('applicationsOpen')} defaultChecked /> Applications open</label></div>
+                <Input {...register('applicationDeadline')} type="date" /><Input {...register('maxApplications', { valueAsNumber: true })} type="number" min="1" placeholder="Maximum applications (optional)" />
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...register('allowWhatsAppApplication')} /> Allow WhatsApp applications</label><Input {...register('applicationWhatsAppNumber')} placeholder="Job WhatsApp number (optional)" /><Input {...register('applicationWhatsAppMessage')} placeholder="WhatsApp message; use {jobTitle}" /><textarea {...register('applicationInstructions')} className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Application instructions" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
