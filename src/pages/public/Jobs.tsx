@@ -24,7 +24,7 @@ export default function Jobs() {
           throw new Error('Failed to fetch jobs');
         }
         const data = await res.json();
-        setJobs(data.filter((j: any) => j.status === 'open'));
+        setJobs((data.data || []).filter((j: any) => j.status === 'open'));
       } catch (error) {
         console.error('Error fetching jobs:', error);
         setHasError(true);

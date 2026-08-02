@@ -16,6 +16,7 @@ interface Product {
   status: 'published' | 'draft' | 'archived';
   platform: string;
   featured: boolean;
+  thumbnail?: string;
 }
 
 export default function AdminProducts() {
@@ -24,6 +25,8 @@ export default function AdminProducts() {
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const { register, handleSubmit, reset, setValue } = useForm();
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
   
   const fetchProducts = async () => {
     try {
@@ -48,6 +51,7 @@ export default function AdminProducts() {
     Object.keys(product).forEach((key) => {
       setValue(key, (product as any)[key]);
     });
+    setThumbnailUrl(product.thumbnail || '');
     setIsOpen(true);
   };
 
@@ -56,11 +60,13 @@ export default function AdminProducts() {
     reset();
     setValue('status', 'draft');
     setValue('featured', false);
+    setThumbnailUrl('');
     setIsOpen(true);
   };
 
   const onSubmit = async (data: any) => {
     try {
+      data.thumbnail = thumbnailUrl;
       if (!data.slug && data.name) {
         data.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
       }
@@ -105,6 +111,34 @@ export default function AdminProducts() {
     }
   };
 
+  
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        setThumbnailUrl(data.data.url);
+        toast.success('Image uploaded successfully');
+      } else {
+        toast.error(data.message || 'Upload failed');
+      }
+    } catch (error) {
+      toast.error('Upload failed');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -122,6 +156,19 @@ export default function AdminProducts() {
               <DialogTitle>{editingId ? 'Edit Product' : 'Add New Product'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Product Image</label>
+                <div className="flex items-center gap-4">
+                  {thumbnailUrl && (
+                    <img src={thumbnailUrl} alt="Thumbnail preview" className="w-16 h-16 object-cover rounded-md border" />
+                  )}
+                  <div className="flex-1">
+                    <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
+                    {isUploading && <p className="text-xs text-muted-foreground mt-1">Uploading...</p>}
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Product Name</label>
@@ -196,7 +243,12 @@ export default function AdminProducts() {
                     <tr key={product._id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-2">
-                          <p className="font-medium text-foreground">{product.name}</p>
+                          {product.thumbnail ? (
+                              <img src={product.thumbnail} alt="" className="w-8 h-8 rounded object-cover" />
+                            ) : (
+                              <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-xs">No img</div>
+                            )}
+                            <p className="font-medium text-foreground">{product.name}</p>
                           {product.featured && <span className="bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">Featured</span>}
                         </div>
                         <p className="text-muted-foreground text-xs mt-1 truncate max-w-xs">{product.summary}</p>

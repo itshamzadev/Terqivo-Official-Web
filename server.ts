@@ -98,6 +98,11 @@ async function createApp(): Promise<express.Express> {
   });
 
   // All backend routes
+  
+  // Serve uploads directory
+  const uploadsPath = path.join(process.cwd(), 'public', 'uploads');
+  app.use('/uploads', express.static(uploadsPath));
+
   app.use("/api", apiRoutes);
 
   if (isProduction) {

@@ -22,7 +22,7 @@ export default function Blog() {
           throw new Error('Failed to fetch blog posts');
         }
         const data = await res.json();
-        setArticles(data.filter((p: any) => p.status === 'published'));
+        setArticles((data.data || []).filter((p: any) => p.status === 'published'));
       } catch (error) {
         console.error('Error fetching blog posts:', error);
         setHasError(true);

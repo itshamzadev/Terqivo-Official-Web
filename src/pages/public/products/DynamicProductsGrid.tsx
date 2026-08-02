@@ -51,7 +51,7 @@ interface Product {
   name: string;
   slug: string;
   summary: string;
-  image?: string;
+  thumbnail?: string;
   category?: string;
   status: string;
   featured?: boolean;
@@ -72,7 +72,7 @@ export function DynamicProductsGrid() {
         throw new Error('Failed to fetch products');
       }
       const data = await res.json();
-      setProducts(data.filter((p: Product) => p.status === 'published'));
+      setProducts((data.data || []).filter((p: Product) => p.status === 'published'));
     } catch (error) {
       console.error('Error fetching products:', error);
       setHasError(true);
@@ -114,8 +114,8 @@ export function DynamicProductsGrid() {
               >
                 <div className="h-full bg-background rounded-2xl border flex flex-col hover:border-accent/40 hover:shadow-md transition-all group overflow-hidden">
                   <div className="w-full h-[220px] bg-muted/20 border-b overflow-hidden relative">
-                    {product.image ? (
-                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    {product.thumbnail ? (
+                      <img src={product.thumbnail} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
                       <ImagePlaceholder title={`${product.name} Preview`} className="w-full h-full border-0 rounded-none" />
                     )}

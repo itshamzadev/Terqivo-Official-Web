@@ -61,7 +61,7 @@ export function DynamicSolutionsGrid() {
         throw new Error('Failed to fetch solutions');
       }
       const data = await res.json();
-      setSolutions(data.filter((s: Solution) => s.status === 'published'));
+      setSolutions((data.data || []).filter((s: Solution) => s.status === 'published'));
     } catch (error) {
       console.error('Error fetching solutions:', error);
       setHasError(true);

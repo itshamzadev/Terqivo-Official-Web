@@ -41,7 +41,7 @@ export default function Courses() {
           throw new Error('Failed to fetch courses');
         }
         const data = await res.json();
-        setCourses(data.filter((c: any) => c.status !== 'draft' && c.status !== 'archived'));
+        setCourses((data.data || []).filter((c: any) => c.status !== 'draft' && c.status !== 'archived'));
       } catch (error) {
         console.error('Error fetching courses:', error);
         setHasError(true);

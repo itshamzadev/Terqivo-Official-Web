@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Router } from 'express';
 import { Product } from '../models/Product';
 import { authenticate } from '../middleware/auth';
@@ -6,16 +7,21 @@ const router = Router();
 
 // Get all (public/admin)
 router.get('/', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) return res.json({ success: true, data: [] });
+  if (require('mongoose').connection.readyState !== 1) {
+    return res.json({ success: true, data: [] });
+  }
   try {
     const items = await Product.find().sort({ createdAt: -1 });
     res.json({ success: true, data: items });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error(error); res.status(500).json({ success: false, message: error instanceof Error ? error.message : String(error) });
   }
 });
 
 // Get single
 router.get('/:idOrSlug', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) return res.status(404).json({ success: false, message: 'DB Disconnected' });
   try {
     const { idOrSlug } = req.params;
     let item;
@@ -28,7 +34,7 @@ router.get('/:idOrSlug', async (req, res) => {
     if (!item) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, data: item });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error(error); res.status(500).json({ success: false, message: error instanceof Error ? error.message : String(error) });
   }
 });
 
@@ -67,7 +73,7 @@ router.delete('/:id', authenticate, async (req, res) => {
     if (!item) return res.status(404).json({ success: false, message: 'Not found' });
     res.json({ success: true, message: 'Deleted successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error(error); res.status(500).json({ success: false, message: error instanceof Error ? error.message : String(error) });
   }
 });
 
