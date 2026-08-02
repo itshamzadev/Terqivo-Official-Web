@@ -4,6 +4,7 @@ import { ArrowRight, BookOpen, Clock, PlayCircle } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import type { Course } from '../Courses';
+import { assetUrl, formatPrice } from '@/src/lib/utils';
 
 function CourseSkeleton() {
   return (
@@ -86,8 +87,8 @@ export function CoursesGrid({ courses, isLoading, hasError }: CoursesGridProps) 
               >
                 <div className="flex flex-col flex-1 bg-background rounded-2xl border hover:border-accent/40 hover:shadow-md transition-all overflow-hidden group">
                   <div className="w-full aspect-[16/10] bg-muted/20 border-b overflow-hidden relative">
-                    {course.coverImage ? (
-                      <img src={course.coverImage} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    {(course.image || course.coverImage || course.thumbnail) ? (
+                      <img src={assetUrl(course.image || course.coverImage || course.thumbnail)} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     ) : (
                       <ImagePlaceholder title="Course Cover" className="w-full h-full border-0 rounded-none group-hover:scale-105 transition-transform duration-700" />
                     )}
@@ -112,7 +113,7 @@ export function CoursesGrid({ courses, isLoading, hasError }: CoursesGridProps) 
                     </h3>
                     
                     <p className="text-muted-foreground text-sm leading-relaxed mb-6 line-clamp-2">
-                      {course.shortDescription}
+                      {course.shortDescription || course.summary}
                     </p>
 
                     <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium mb-6">
@@ -121,16 +122,16 @@ export function CoursesGrid({ courses, isLoading, hasError }: CoursesGridProps) 
                           <Clock className="h-3.5 w-3.5" /> {course.duration}
                         </div>
                       )}
-                      {course.deliveryFormat && (
+                      {(course.deliveryFormat || course.format) && (
                         <div className="flex items-center gap-1.5">
-                          <PlayCircle className="h-3.5 w-3.5" /> {course.deliveryFormat}
+                          <PlayCircle className="h-3.5 w-3.5" /> {course.deliveryFormat || course.format}
                         </div>
                       )}
                     </div>
                     
                     <div className="mt-auto pt-5 border-t flex items-center justify-between">
                       <div className="font-heading font-bold text-lg">
-                        {course.price !== undefined ? `$${course.price}` : 'Free'}
+                        {course.price ? formatPrice(course.salePrice ?? course.price, course.currency) : 'Free'}
                       </div>
                       
                       <Button size="sm" asChild>

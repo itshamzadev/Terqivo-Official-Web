@@ -4,6 +4,7 @@ import { Button } from '@/src/components/ui/button';
 import { ArrowLeft, Globe, Code2, Download, CheckCircle2 } from 'lucide-react';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import Markdown from 'react-markdown';
+import { assetUrl } from '@/src/lib/utils';
 
 export default function ProductDetails() {
   const { slug } = useParams();
@@ -94,7 +95,13 @@ export default function ProductDetails() {
             </div>
             
             <div className="flex-1 w-full">
-              <ImagePlaceholder title="Product Interface" className="w-full aspect-[4/3] rounded-[24px]" />
+              {product.image || product.thumbnail ? (
+                <div className="w-full aspect-[4/3] rounded-[24px] overflow-hidden border bg-muted/20">
+                  <img src={assetUrl(product.image || product.thumbnail)} alt={product.name} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <ImagePlaceholder title="Product Interface" className="w-full aspect-[4/3] rounded-[24px]" />
+              )}
             </div>
           </div>
         </div>

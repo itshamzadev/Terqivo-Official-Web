@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Package } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
+import { assetUrl } from '@/src/lib/utils';
 
 export function ProductSkeleton() {
   return (
@@ -52,6 +53,7 @@ interface Product {
   slug: string;
   summary: string;
   thumbnail?: string;
+  image?: string;
   category?: string;
   status: string;
   featured?: boolean;
@@ -114,8 +116,8 @@ export function DynamicProductsGrid() {
               >
                 <div className="h-full bg-background rounded-2xl border flex flex-col hover:border-accent/40 hover:shadow-md transition-all group overflow-hidden">
                   <div className="w-full h-[220px] bg-muted/20 border-b overflow-hidden relative">
-                    {product.thumbnail ? (
-                      <img src={product.thumbnail} alt={product.name} className="w-full h-full object-cover" />
+                    {(product.image || product.thumbnail) ? (
+                      <img src={assetUrl(product.image || product.thumbnail)} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
                       <ImagePlaceholder title={`${product.name} Preview`} className="w-full h-full border-0 rounded-none" />
                     )}

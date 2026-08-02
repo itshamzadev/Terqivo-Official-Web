@@ -11,6 +11,9 @@ import applicationRoutes from './applications';
 import uploadRoutes from './upload';
 import dashboardRoutes from './dashboard';
 import settingsRoutes from './settings';
+import currencyRoutes from './currencies';
+import paymentAccountRoutes from './paymentAccounts';
+import courseEnrollmentRequestRoutes from './courseEnrollmentRequests';
 
 const router = Router();
 
@@ -28,5 +31,8 @@ router.use('/applications', applicationRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/currencies', currencyRoutes);
+router.use('/payment-accounts', paymentAccountRoutes);
+router.use('/course-enrollment-requests', courseEnrollmentRequestRoutes);
 
 export default router;

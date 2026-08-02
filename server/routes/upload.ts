@@ -1,58 +1,26 @@
-import { Router } from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { authenticate } from '../middleware/auth';
+import { Router } from "express";
+import { authenticate } from "../middleware/auth";
+import { createImageUpload, uploadedFileUrl } from "../utils/uploads";
 
 const router = Router();
+const uploaders = {
+  product: createImageUpload("products"),
+  course: createImageUpload("courses"),
+  payment: createImageUpload("payment-screenshots", 5 * 1024 * 1024),
+  general: createImageUpload("general"),
+};
 
-// Ensure upload dir exists
-const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Not an image! Please upload an image.'));
-    }
-  }
-});
-
-router.post('/', authenticate, (req, res, next) => {
-  upload.single('file')(req, res, (err) => {
-    if (err) {
-      console.error("Multer error:", err);
-      return res.status(500).json({ success: false, message: 'Upload failed: ' + err.message });
-    }
+router.post("/", authenticate, (req, res, next) => {
+  const type = typeof req.query.type === "string" && req.query.type in uploaders ? req.query.type as keyof typeof uploaders : "general";
+  uploaders[type].single("file")(req, res, (error) => {
+    if (error) return res.status(400).json({ success: false, message: error.message });
     next();
   });
 }, (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
-    }
-    const fileUrl = `/uploads/${req.file.filename}`;
-    res.json({ success: true, data: { url: fileUrl } });
-  } catch (error: any) {
-    console.error("Upload route error:", error);
-    res.status(500).json({ success: false, message: 'Upload failed', error: error.message });
-  }
+  const type = typeof req.query.type === "string" && req.query.type in uploaders ? req.query.type : "general";
+  const url = uploadedFileUrl(req, type);
+  if (!url) return res.status(400).json({ success: false, message: "No file uploaded" });
+  res.status(201).json({ success: true, data: { url } });
 });
 
 export default router;

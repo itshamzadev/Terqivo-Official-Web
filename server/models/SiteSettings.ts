@@ -41,6 +41,11 @@ const siteSettingsSchema = new mongoose.Schema({
     twitter: { type: String, default: '' },
     facebook: { type: String, default: '' },
     instagram: { type: String, default: '' },
+  },
+  courseContact: {
+    courseWhatsAppEnabled: { type: Boolean, default: false },
+    courseWhatsAppNumber: { type: String, default: '' },
+    courseWhatsAppMessage: { type: String, default: 'Hello Terqivo, I want details about the {courseTitle} course.' },
   }
 }, {
   timestamps: true,

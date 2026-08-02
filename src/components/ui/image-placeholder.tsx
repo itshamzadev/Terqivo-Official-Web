@@ -9,7 +9,7 @@ export interface ImagePlaceholderProps {
 
 export function ImagePlaceholder({ 
   title, 
-  description = "Final branded visual will be added later.", 
+  description = "No image available.", 
   className 
 }: ImagePlaceholderProps) {
   return (

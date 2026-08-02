@@ -4,6 +4,7 @@ import { ArrowRight, BookOpen, Clock, PlayCircle, User } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import type { Course } from '../Courses';
+import { assetUrl, formatPrice } from '@/src/lib/utils';
 
 export function FeaturedCourse({ course }: { course: Course | null }) {
   if (!course) {
@@ -38,8 +39,8 @@ export function FeaturedCourse({ course }: { course: Course | null }) {
           className="group grid lg:grid-cols-2 gap-12 items-center bg-background rounded-[32px] border overflow-hidden hover:border-accent/40 transition-colors shadow-sm hover:shadow-md"
         >
           <div className="w-full h-full min-h-[350px] lg:min-h-[450px] bg-muted/20 overflow-hidden relative">
-            {course.coverImage ? (
-              <img src={course.coverImage} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            {(course.image || course.coverImage || course.thumbnail) ? (
+              <img src={assetUrl(course.image || course.coverImage || course.thumbnail)} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
             ) : (
               <ImagePlaceholder title="Featured Course Cover" className="w-full h-full rounded-none border-0 group-hover:scale-105 transition-transform duration-700" />
             )}
@@ -60,7 +61,7 @@ export function FeaturedCourse({ course }: { course: Course | null }) {
             </h3>
             
             <p className="text-muted-foreground text-lg leading-relaxed line-clamp-3">
-              {course.shortDescription}
+              {course.shortDescription || course.summary}
             </p>
 
             <div className="flex flex-wrap items-center gap-6 pt-2 text-sm text-muted-foreground font-medium">
@@ -69,9 +70,9 @@ export function FeaturedCourse({ course }: { course: Course | null }) {
                   <Clock className="h-4 w-4" /> {course.duration}
                 </div>
               )}
-              {course.deliveryFormat && (
+              {(course.deliveryFormat || course.format) && (
                 <div className="flex items-center gap-2">
-                  <PlayCircle className="h-4 w-4" /> {course.deliveryFormat}
+                  <PlayCircle className="h-4 w-4" /> {course.deliveryFormat || course.format}
                 </div>
               )}
             </div>

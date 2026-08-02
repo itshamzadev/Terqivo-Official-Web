@@ -11,6 +11,7 @@ interface DashboardData {
     jobs: number;
     posts: number;
     unreadMessages: number;
+    pendingEnrollmentRequests: number;
   };
   recentActivity: any[];
 }
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
     { title: 'Jobs', value: data?.stats.jobs || 0, icon: Users, link: '/admin/jobs' },
     { title: 'Blog Posts', value: data?.stats.posts || 0, icon: FileText, link: '/admin/blog' },
     { title: 'Unread Messages', value: data?.stats.unreadMessages || 0, icon: MessageSquare, link: '/admin/messages', alert: (data?.stats.unreadMessages || 0) > 0 },
+    { title: 'Pending Enrollments', value: data?.stats.pendingEnrollmentRequests || 0, icon: GraduationCap, link: '/admin/enrollments', alert: (data?.stats.pendingEnrollmentRequests || 0) > 0 },
   ];
 
   if (isLoading) {

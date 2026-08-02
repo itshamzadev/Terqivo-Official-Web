@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { LayoutDashboard, Package, Briefcase, GraduationCap, FileText, MessageSquare, Settings, LogOut, Users, FileSignature, UserCheck } from 'lucide-react';
+import { LayoutDashboard, Package, Briefcase, GraduationCap, FileText, MessageSquare, Settings, LogOut, Users, FileSignature, UserCheck, Coins, WalletCards } from 'lucide-react';
 
 export function AdminLayout() {
   const navigate = useNavigate();
@@ -25,6 +25,8 @@ export function AdminLayout() {
     { name: 'Services', path: '/admin/services', icon: Briefcase },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Courses', path: '/admin/courses', icon: GraduationCap },
+    { name: 'Currencies', path: '/admin/currencies', icon: Coins },
+    { name: 'Payment Accounts', path: '/admin/payment-accounts', icon: WalletCards },
     { name: 'Enrollments', path: '/admin/enrollments', icon: UserCheck },
     { name: 'Jobs', path: '/admin/jobs', icon: Users },
     { name: 'Applications', path: '/admin/applications', icon: FileSignature },

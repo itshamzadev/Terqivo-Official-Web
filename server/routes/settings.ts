@@ -19,7 +19,8 @@ router.get('/public', async (req, res) => {
         branding: settings.branding,
         seo: settings.seo,
         footer: settings.footer,
-        social: settings.social
+        social: settings.social,
+        courseContact: settings.courseContact
       }
     });
   } catch (error: any) {
@@ -50,6 +51,7 @@ router.put('/', authenticate, async (req, res) => {
     if (req.body.seo) settings.seo = { ...settings.seo, ...req.body.seo };
     if (req.body.footer) settings.footer = { ...settings.footer, ...req.body.footer };
     if (req.body.social) settings.social = { ...settings.social, ...req.body.social };
+    if (req.body.courseContact) settings.courseContact = { ...settings.courseContact, ...req.body.courseContact };
 
     await settings.save();
     

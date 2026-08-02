@@ -42,6 +42,11 @@ export default function AdminSettings() {
   const [social, setSocial] = useState({
     linkedin: '', github: '', youtube: '', twitter: '', facebook: '', instagram: ''
   });
+  const [courseContact, setCourseContact] = useState({
+    courseWhatsAppEnabled: false,
+    courseWhatsAppNumber: '',
+    courseWhatsAppMessage: 'Hello Terqivo, I want details about the {courseTitle} course.'
+  });
 
   const [systemInfo, setSystemInfo] = useState({
     environment: 'production',
@@ -71,6 +76,7 @@ export default function AdminSettings() {
         if (data.seo) setSeo(data.seo);
         if (data.footer) setFooter(data.footer);
         if (data.social) setSocial(data.social);
+        if (data.courseContact) setCourseContact(data.courseContact);
         if (data.updatedAt) setSystemInfo(prev => ({ ...prev, lastUpdated: new Date(data.updatedAt).toLocaleString() }));
       }
     } catch (error) {
@@ -149,7 +155,7 @@ export default function AdminSettings() {
     try {
       const loadingToast = toast.loading('Uploading...');
       
-      const res = await fetch('/api/upload', {
+      const res = await fetch('/api/upload?type=general', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -190,6 +196,7 @@ export default function AdminSettings() {
     { id: 'seo', label: 'SEO Defaults', icon: Search },
     { id: 'footer', label: 'Footer', icon: Layout },
     { id: 'social', label: 'Social Links', icon: Share2 },
+    { id: 'courseContact', label: 'Course WhatsApp', icon: Globe },
     { id: 'system', label: 'System Info', icon: Server },
   ];
 
@@ -587,6 +594,17 @@ export default function AdminSettings() {
                     <Save className="w-4 h-4" /> Save Changes
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* System Info */}
+            {activeTab === 'courseContact' && (
+              <div className="space-y-6">
+                <div><h2 className="text-lg font-semibold text-gray-900 dark:text-white">Course WhatsApp</h2><p className="text-sm text-gray-500 dark:text-gray-400">Control the alternative contact button shown on public course pages.</p></div>
+                <label className="flex items-center gap-3 text-sm"><input type="checkbox" name="courseWhatsAppEnabled" checked={courseContact.courseWhatsAppEnabled} onChange={(e) => handleChange('courseContact', setCourseContact, e)} /> Enable Chat on WhatsApp</label>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WhatsApp number</label><input type="text" name="courseWhatsAppNumber" value={courseContact.courseWhatsAppNumber} onChange={(e) => handleChange('courseContact', setCourseContact, e)} placeholder="+92 300 1234567" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" /></div>
+                <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default message</label><textarea name="courseWhatsAppMessage" value={courseContact.courseWhatsAppMessage} onChange={(e) => handleChange('courseContact', setCourseContact, e)} rows={4} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" /><p className="text-xs text-gray-500 mt-1">Use {'{courseTitle}'} where the course title should be inserted.</p></div>
+                <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700"><button onClick={() => handleSave('courseContact', courseContact)} disabled={isSaving} className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"><Save className="w-4 h-4" /> Save Changes</button></div>
               </div>
             )}
 

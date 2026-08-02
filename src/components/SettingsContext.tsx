@@ -42,6 +42,11 @@ export interface SiteSettings {
     facebook: string;
     instagram: string;
   };
+  courseContact: {
+    courseWhatsAppEnabled: boolean;
+    courseWhatsAppNumber: string;
+    courseWhatsAppMessage: string;
+  };
 }
 
 const defaultSettings: SiteSettings = {
@@ -80,6 +85,11 @@ const defaultSettings: SiteSettings = {
   },
   social: {
     linkedin: '', github: '', youtube: '', twitter: '', facebook: '', instagram: ''
+  },
+  courseContact: {
+    courseWhatsAppEnabled: false,
+    courseWhatsAppNumber: '',
+    courseWhatsAppMessage: 'Hello Terqivo, I want details about the {courseTitle} course.'
   }
 };
 
