@@ -16,7 +16,7 @@ import { AdminUser } from "./server/models/AdminUser";
 dotenv.config();
 
 const isProduction = process.env.NODE_ENV === "production";
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = 3000;
 
 // Vite frontend isi project ke dist folder mein build hota hai.
 const clientDistPath = path.resolve(process.cwd(), "dist");
