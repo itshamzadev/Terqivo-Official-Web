@@ -12,9 +12,15 @@ export default function ProductDetails() {
 
   useEffect(() => {
     fetch(`/api/products/${slug}`)
-      .then(res => res.json())
-      .then(data => {
-        setProduct(data);
+      .then(async (res) => {
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+          throw new Error(result.message || 'Product not found');
+        }
+        return result.data;
+      })
+      .then((productData) => {
+        setProduct(productData);
         setIsLoading(false);
       })
       .catch(err => {

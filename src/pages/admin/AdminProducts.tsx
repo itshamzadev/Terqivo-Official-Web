@@ -31,12 +31,14 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     try {
       const res = await fetch('/api/products');
-      if (res.ok) {
-        const result = await res.json();
-        setProducts(result.data || []);
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.message || 'Failed to load products');
       }
+      setProducts(result.data || []);
     } catch (error) {
       console.error(error);
+      toast.error(error instanceof Error ? error.message : 'Failed to load products');
     } finally {
       setIsLoading(false);
     }

@@ -7,9 +7,12 @@ const router = Router();
 
 // Get all (public/admin)
 router.get('/', async (req, res) => {
-  if (mongoose.connection.readyState !== 1) return res.json({ success: true, data: [] });
-  if (require('mongoose').connection.readyState !== 1) {
-    return res.json({ success: true, data: [] });
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database is not connected',
+      data: []
+    });
   }
   try {
     const items = await Product.find().sort({ createdAt: -1 });
