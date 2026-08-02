@@ -4,6 +4,7 @@ import { Button } from '@/src/components/ui/button';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import Markdown from 'react-markdown';
+import { ManagedImage } from '@/src/components/ui/managed-image';
 
 export default function BlogPostDetails() {
   const { slug } = useParams();
@@ -12,7 +13,11 @@ export default function BlogPostDetails() {
 
   useEffect(() => {
     fetch(`/api/blog/${slug}`)
-      .then(res => res.json())
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Article not found');
+        return data.data;
+      })
       .then(data => {
         setPost(data);
         setIsLoading(false);
@@ -61,7 +66,7 @@ export default function BlogPostDetails() {
 
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-4xl">
-          <ImagePlaceholder title="Article Header Visual" className="w-full aspect-[21/9] rounded-[24px] mb-12" />
+          <ManagedImage src={post.coverImage} alt={post.title} className="w-full aspect-[21/9] rounded-[24px] mb-12 object-cover border" fallback={<ImagePlaceholder title="Article Header Visual" className="w-full aspect-[21/9] rounded-[24px] mb-12" />} />
           
           <div className="prose prose-lg prose-slate dark:prose-invert mx-auto">
             <Markdown>{post.content || 'No content available.'}</Markdown>

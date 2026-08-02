@@ -4,21 +4,28 @@ import { Button } from '@/src/components/ui/button';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import Markdown from 'react-markdown';
+import { ManagedImage } from '@/src/components/ui/managed-image';
 
 export default function ServiceDetails() {
   const { slug } = useParams();
   const [service, setService] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     fetch(`/api/services/${slug}`)
-      .then(res => res.json())
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Service not found');
+        return data.data;
+      })
       .then(data => {
         setService(data);
         setIsLoading(false);
       })
       .catch(err => {
         console.error(err);
+        setHasError(true);
         setIsLoading(false);
       });
   }, [slug]);
@@ -27,7 +34,7 @@ export default function ServiceDetails() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  if (!service) {
+  if (hasError || !service) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-3xl font-heading font-bold">Service Not Found</h1>
@@ -47,7 +54,7 @@ export default function ServiceDetails() {
           <p className="text-xl text-muted-foreground mb-8">
             {service.shortDescription}
           </p>
-          <ImagePlaceholder title="Service Hero" className="w-full aspect-[21/9] rounded-[24px]" />
+          <ManagedImage src={service.image} alt={service.title} className="w-full aspect-[21/9] rounded-[24px] object-cover border" fallback={<ImagePlaceholder title="Service Hero" className="w-full aspect-[21/9] rounded-[24px]" />} />
         </div>
       </section>
 

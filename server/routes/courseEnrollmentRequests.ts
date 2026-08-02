@@ -5,7 +5,7 @@ import { Currency } from "../models/Currency";
 import { PaymentAccount } from "../models/PaymentAccount";
 import { CourseEnrollmentRequest } from "../models/CourseEnrollmentRequest";
 import { authenticate } from "../middleware/auth";
-import { createImageUpload, uploadUrl } from "../utils/uploads";
+import { createImageUpload, removeLocalUpload, uploadUrl, validateUploadedImage } from "../utils/uploads";
 import crypto from "crypto";
 
 const router = Router();
@@ -24,6 +24,10 @@ router.post("/", (req, res, next) => {
     const { fullName, email, phone, transactionId, message } = req.body;
     if (!idIsValid(courseId) || !idIsValid(paymentAccountId)) return res.status(400).json({ success: false, message: "Course and payment account are required" });
     if (!req.file) return res.status(400).json({ success: false, message: "Payment screenshot is required" });
+    if (!await validateUploadedImage(req.file)) {
+      removeLocalUpload(uploadUrl("payment-screenshots", req.file.filename), "payment-screenshots");
+      return res.status(400).json({ success: false, message: "The payment screenshot is not a valid JPG, PNG, or WEBP image." });
+    }
     if (!fullName?.trim() || !/^\S+@\S+\.\S+$/.test(String(email)) || !phone?.trim()) return res.status(400).json({ success: false, message: "Name, email, and phone are required" });
 
     const [course, account] = await Promise.all([Course.findOne({ _id: courseId, $or: [{ published: true }, { published: { $exists: false }, status: { $in: ["active", "published"] } }] }), PaymentAccount.findOne({ _id: paymentAccountId, isActive: true })]);

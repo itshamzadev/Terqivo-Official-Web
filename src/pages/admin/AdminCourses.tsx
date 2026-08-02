@@ -6,7 +6,7 @@ import { Input } from "@/src/components/ui/input";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/src/components/ui/dialog";
 import { toast } from "sonner";
-import { assetUrl, formatPrice } from "@/src/lib/utils";
+import { assetUrl, formatPrice, removeUnusedUpload } from "@/src/lib/utils";
 
 interface Course {
   _id: string; title: string; slug: string; category?: string; shortDescription?: string; summary?: string;
@@ -23,6 +23,7 @@ export default function AdminCourses() {
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [courseImage, setCourseImage] = useState("");
+  const [savedCourseImage, setSavedCourseImage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const { register, handleSubmit, reset, setValue } = useForm<any>();
 
@@ -43,13 +44,14 @@ export default function AdminCourses() {
 
   const openEdit = (course: Course) => {
     setEditingId(course._id);
-    Object.entries({ ...course, shortDescription: course.shortDescription || course.summary, fullDescription: course.fullDescription || course.description, format: course.format || course.learningMode, published: course.published ?? (course.status === "published" || course.status === "active") }).forEach(([key, value]) => setValue(key, value));
+    Object.entries({ ...course, shortDescription: course.shortDescription || course.summary, fullDescription: course.fullDescription || course.description, format: course.format || course.learningMode, published: Boolean(course.published || course.status === "published" || course.status === "active") }).forEach(([key, value]) => setValue(key, value));
     setCourseImage(course.image || course.coverImage || course.thumbnail || "");
+    setSavedCourseImage(course.image || course.coverImage || course.thumbnail || "");
     setIsOpen(true);
   };
 
   const openCreate = () => {
-    setEditingId(null); reset(); setCourseImage("");
+    setEditingId(null); reset(); setCourseImage(""); setSavedCourseImage("");
     setValue("enrollmentStatus", "open"); setValue("status", "draft"); setValue("published", false); setValue("featured", false); setValue("limitedSeats", false);
     setIsOpen(true);
   };
@@ -76,8 +78,8 @@ export default function AdminCourses() {
     try {
       const res = await fetch(editingId ? `/api/courses/${editingId}` : "/api/courses", { method: editingId ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await res.json(); if (!res.ok || !result.success) throw new Error(result.message || "Could not save course");
-      setIsOpen(false); reset(); await fetchData(); toast.success(editingId ? "Course updated" : "Course created");
-    } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save course"); }
+      setIsOpen(false); reset(); setSavedCourseImage(courseImage); await fetchData(); toast.success(editingId ? "Course updated" : "Course created");
+    } catch (error) { await removeUnusedUpload(courseImage, savedCourseImage); toast.error(error instanceof Error ? error.message : "Could not save course"); }
   };
 
   const handleDelete = async (id: string) => {

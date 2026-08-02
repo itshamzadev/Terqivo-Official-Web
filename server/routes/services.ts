@@ -1,74 +1,214 @@
-import { Router } from 'express';
-import { Service } from '../models/Service';
-import { authenticate } from '../middleware/auth';
+import { Router, type NextFunction, type Request, type Response } from "express";
+import mongoose from "mongoose";
+import { Service } from "../models/Service";
+import { authenticate } from "../middleware/auth";
+import {
+  createImageUpload,
+  isLocalUpload,
+  isValidImageReference,
+  normalizeImagePath,
+  removeLocalUpload,
+  uploadUrl,
+  validateUploadedImage,
+} from "../utils/uploads";
 
 const router = Router();
+const serviceUpload = createImageUpload("services");
+const publicFilter: any = { $or: [{ published: true }, { published: { $exists: false }, status: "published" }] };
 
-// Get all (public/admin)
-router.get('/', async (req, res) => {
+function idIsValid(id: string) {
+  return mongoose.isValidObjectId(id);
+}
+
+function slugify(value: string) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90);
+}
+
+async function uniqueSlug(value: string, excludeId?: string) {
+  const base = slugify(value) || `service-${Date.now()}`;
+  let slug = base;
+  let suffix = 2;
+  while (await Service.exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })) slug = `${base}-${suffix++}`;
+  return slug;
+}
+
+function parseFormValue(value: unknown) {
+  if (typeof value !== "string") return value;
   try {
-    const items = await Service.find().sort({ createdAt: -1 });
-    res.json({ success: true, data: items });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
+function parseBoolean(value: unknown, fallback = false) {
+  if (value === undefined) return fallback;
+  return value === true || value === "true" || value === "1";
+}
+
+function normalizeService(service: any) {
+  const data = service?.toObject ? service.toObject() : service;
+  return { ...data, image: normalizeImagePath(data?.image || data?.imageUrl, "services"), published: Boolean(data?.published || data?.status === "published") };
+}
+
+async function serviceImageIsReferenced(image: string, excludeId: string) {
+  if (!isLocalUpload(image, "services")) return true;
+  const normalized = normalizeImagePath(image, "services");
+  return Boolean(await Service.exists({ _id: { $ne: excludeId }, $or: [{ image: { $in: [image, normalized] } }, { imageUrl: { $in: [image, normalized] } }] }));
+}
+
+function handleServiceUpload(req: Request, res: Response, next: NextFunction) {
+  serviceUpload.single("image")(req, res, (error) => {
+    if (error) return res.status(400).json({ success: false, message: error.message });
+    next();
+  });
+}
+
+async function validateRequestImage(req: Request, res: Response) {
+  if (!req.file) return true;
+  if (await validateUploadedImage(req.file)) return true;
+  removeLocalUpload(uploadUrl("services", req.file.filename), "services");
+  res.status(400).json({ success: false, message: "The uploaded file is not a valid JPG, PNG, or WEBP image." });
+  return false;
+}
+
+router.get("/", async (_req, res) => {
+  try {
+    const items = await Service.find(publicFilter).sort({ sortOrder: 1, createdAt: -1 }).lean();
+    res.json({ success: true, data: items.map(normalizeService) });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch services", data: [] });
   }
 });
 
-// Get single
-router.get('/:idOrSlug', async (req, res) => {
+router.get("/admin", authenticate, async (_req, res) => {
   try {
-    const { idOrSlug } = req.params;
-    let item;
-    if (idOrSlug.match(/^[0-9a-fA-F]{24}$/)) {
-      item = await Service.findById(idOrSlug);
-    } else {
-      item = await Service.findOne({ slug: idOrSlug });
+    const items = await Service.find().sort({ sortOrder: 1, createdAt: -1 }).lean();
+    res.json({ success: true, data: items.map(normalizeService) });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch services" });
+  }
+});
+
+router.get("/admin/:id", authenticate, async (req, res) => {
+  if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid service id" });
+  const item = await Service.findById(req.params.id);
+  if (!item) return res.status(404).json({ success: false, message: "Service not found" });
+  res.json({ success: true, data: normalizeService(item) });
+});
+
+router.get("/:idOrSlug", async (req, res) => {
+  try {
+    const filter = idIsValid(req.params.idOrSlug)
+      ? { _id: req.params.idOrSlug, ...publicFilter }
+      : { slug: req.params.idOrSlug, ...publicFilter };
+    const item = await Service.findOne(filter);
+    if (!item) return res.status(404).json({ success: false, message: "Service not found" });
+    res.json({ success: true, data: normalizeService(item) });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch service" });
+  }
+});
+
+router.post("/", authenticate, handleServiceUpload, async (req, res) => {
+  let newImage = "";
+  try {
+    if (!await validateRequestImage(req, res)) return;
+    const body = { ...req.body };
+    body.title = String(body.title || "").trim();
+    if (!body.title) return res.status(400).json({ success: false, message: "Service title is required" });
+    body.slug = await uniqueSlug(body.slug || body.title);
+    body.features = parseFormValue(body.features) || [];
+    body.process = parseFormValue(body.process) || [];
+    body.featured = parseBoolean(body.featured);
+    body.published = body.published === undefined ? body.status === "published" : parseBoolean(body.published);
+    body.status = body.published ? "published" : "draft";
+    body.sortOrder = Number(body.sortOrder) || 0;
+    if (req.file) {
+      newImage = uploadUrl("services", req.file.filename);
+      body.image = newImage;
+    } else if (body.removeImage === "true") {
+      body.image = "";
+    } else if (body.image !== undefined || body.imageUrl !== undefined) {
+      const imageValue = body.image ?? body.imageUrl;
+      if (!isValidImageReference(imageValue, "services")) return res.status(400).json({ success: false, message: "Please provide a valid image URL or upload an image file." });
+      body.image = normalizeImagePath(imageValue, "services");
     }
-    
-    if (!item) return res.status(404).json({ success: false, message: 'Not found' });
-    res.json({ success: true, data: item });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-// Create
-router.post('/', authenticate, async (req, res) => {
-  try {
-    const item = new Service(req.body);
-    await item.save();
-    res.status(201).json({ success: true, message: 'Created successfully', data: item });
+    if (body.image !== undefined) body.imageUrl = "";
+    const item = await Service.create(body);
+    res.status(201).json({ success: true, message: "Service created", data: normalizeService(item) });
   } catch (error: any) {
-    if (error.code === 11000) {
-      return res.status(409).json({ success: false, message: 'Slug already exists' });
-    }
-    res.status(400).json({ success: false, message: 'Bad request', error: error.message });
+    if (newImage) removeLocalUpload(newImage, "services");
+    res.status(error?.code === 11000 ? 409 : 400).json({ success: false, message: error?.code === 11000 ? "Slug already exists" : error?.message || "Invalid service data" });
   }
 });
 
-// Update
-router.put('/:id', authenticate, async (req, res) => {
+async function updateService(req: Request, res: Response) {
+  if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid service id" });
+  let newImage = "";
   try {
-    const item = await Service.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!item) return res.status(404).json({ success: false, message: 'Not found' });
-    res.json({ success: true, message: 'Updated successfully', data: item });
+    if (!await validateRequestImage(req, res)) return;
+    const current = await Service.findById(req.params.id);
+    if (!current) return res.status(404).json({ success: false, message: "Service not found" });
+    const body = { ...req.body };
+    if (body.title) body.title = String(body.title).trim();
+    if (body.slug || body.title) body.slug = await uniqueSlug(body.slug || body.title, req.params.id);
+    if (body.features !== undefined) body.features = parseFormValue(body.features) || [];
+    if (body.process !== undefined) body.process = parseFormValue(body.process) || [];
+    if (body.featured !== undefined) body.featured = parseBoolean(body.featured);
+    if (body.published !== undefined) body.published = parseBoolean(body.published);
+    if (body.published !== undefined) body.status = body.published ? "published" : "draft";
+    if (body.sortOrder !== undefined) body.sortOrder = Number(body.sortOrder) || 0;
+    const oldImage = current.image || current.imageUrl || "";
+    if (req.file) {
+      newImage = uploadUrl("services", req.file.filename);
+      body.image = newImage;
+    } else if (body.removeImage === "true") {
+      body.image = "";
+    } else if (body.image !== undefined || body.imageUrl !== undefined) {
+      const imageValue = body.image ?? body.imageUrl;
+      if (!isValidImageReference(imageValue, "services")) return res.status(400).json({ success: false, message: "Please provide a valid image URL or upload an image file." });
+      body.image = normalizeImagePath(imageValue, "services");
+    }
+    if (body.image !== undefined) body.imageUrl = "";
+    delete body.removeImage;
+    const item = await Service.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
+    if (!item) {
+      if (newImage) removeLocalUpload(newImage, "services");
+      return res.status(404).json({ success: false, message: "Service not found" });
+    }
+    if (newImage || body.image === "") {
+      if (oldImage && normalizeImagePath(oldImage, "services") !== normalizeImagePath(item.image, "services") && !await serviceImageIsReferenced(oldImage, req.params.id)) removeLocalUpload(oldImage, "services");
+    }
+    res.json({ success: true, message: "Service updated", data: normalizeService(item) });
   } catch (error: any) {
-    if (error.code === 11000) {
-      return res.status(409).json({ success: false, message: 'Slug already exists' });
-    }
-    res.status(400).json({ success: false, message: 'Bad request', error: error.message });
+    if (newImage) removeLocalUpload(newImage, "services");
+    res.status(error?.code === 11000 ? 409 : 400).json({ success: false, message: error?.code === 11000 ? "Slug already exists" : error?.message || "Invalid service data" });
   }
+}
+
+router.put("/:id", authenticate, handleServiceUpload, updateService);
+router.patch("/:id", authenticate, handleServiceUpload, updateService);
+
+router.patch("/:id/publish", authenticate, async (req, res) => {
+  if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid service id" });
+  const published = parseBoolean(req.body.published);
+  const item = await Service.findByIdAndUpdate(req.params.id, { published, status: published ? "published" : "draft" }, { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ success: false, message: "Service not found" });
+  res.json({ success: true, data: normalizeService(item), message: published ? "Service published" : "Service unpublished" });
 });
 
-// Delete
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete("/:id", authenticate, async (req, res) => {
+  if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid service id" });
+  const item = await Service.findByIdAndDelete(req.params.id);
+  if (!item) return res.status(404).json({ success: false, message: "Service not found" });
   try {
-    const item = await Service.findByIdAndDelete(req.params.id);
-    if (!item) return res.status(404).json({ success: false, message: 'Not found' });
-    res.json({ success: true, message: 'Deleted successfully' });
+    const image = item.image || item.imageUrl || "";
+    if (image && !await serviceImageIsReferenced(image, req.params.id)) removeLocalUpload(image, "services");
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.warn("Service deleted but image cleanup failed:", error);
   }
+  res.json({ success: true, message: "Service deleted" });
 });
 
 export default router;

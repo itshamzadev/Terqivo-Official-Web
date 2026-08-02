@@ -12,6 +12,7 @@ import bcrypt from "bcryptjs";
 
 import apiRoutes from "./server/routes/api";
 import { AdminUser } from "./server/models/AdminUser";
+import { getUploadsRoot } from "./server/utils/uploads";
 
 dotenv.config();
 
@@ -100,8 +101,8 @@ async function createApp(): Promise<express.Express> {
   // All backend routes
   
   // Serve uploads directory
-  const uploadsPath = path.join(process.cwd(), 'public', 'uploads');
-  app.use('/uploads', express.static(uploadsPath));
+  const uploadsPath = getUploadsRoot();
+  app.use('/uploads', express.static(uploadsPath, { fallthrough: false, index: false }));
 
   app.use("/api", apiRoutes);
 
@@ -152,9 +153,12 @@ async function createApp(): Promise<express.Express> {
     (error: unknown, _req: Request, res: Response, _next: NextFunction) => {
       console.error("Server error:", error);
 
-      res.status(500).json({
+      const errorStatus = typeof error === "object" && error !== null && "status" in error && typeof (error as { status?: unknown }).status === "number"
+        ? (error as { status: number }).status
+        : 500;
+      res.status(errorStatus >= 400 && errorStatus < 600 ? errorStatus : 500).json({
         success: false,
-        message: "Internal server error",
+        message: errorStatus === 404 ? "Not found" : "Internal server error",
       });
     },
   );

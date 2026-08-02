@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Briefcase } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
+import { ManagedImage } from '@/src/components/ui/managed-image';
 
 export function SolutionSkeleton() {
   return (
@@ -42,6 +43,7 @@ interface Solution {
   title: string;
   slug: string;
   shortDescription: string;
+  image?: string;
   category?: string;
   featured?: boolean;
   status: string;
@@ -102,9 +104,9 @@ export function DynamicSolutionsGrid() {
                 transition={{ delay: i * 0.1 }}
               >
                 <div className="h-full bg-background p-6 rounded-2xl border flex flex-col hover:border-accent/40 transition-colors group">
-                  <div className="mb-6 flex justify-between items-start">
-                    <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
-                      <Briefcase className="h-6 w-6" />
+                  <div className="mb-6 flex justify-between items-start gap-4">
+                    <div className="w-24 h-16 rounded-xl bg-muted/20 overflow-hidden shrink-0">
+                      <ManagedImage src={solution.image} alt={solution.title} className="w-full h-full object-cover" fallback={<div className="w-full h-full rounded-xl bg-accent/10 flex items-center justify-center text-accent"><Briefcase className="h-6 w-6" /></div>} />
                     </div>
                     {solution.featured && (
                       <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-accent/5 text-accent">

@@ -6,6 +6,7 @@ import { Input } from '@/src/components/ui/input';
 import { Card, CardContent } from '@/src/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/src/components/ui/dialog';
 import { toast } from 'sonner';
+import { removeUnusedUpload } from '@/src/lib/utils';
 
 interface Product {
   _id: string;
@@ -26,6 +27,7 @@ export default function AdminProducts() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const { register, handleSubmit, reset, setValue } = useForm();
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
+  const [savedThumbnailUrl, setSavedThumbnailUrl] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   
   const fetchProducts = async () => {
@@ -54,6 +56,7 @@ export default function AdminProducts() {
       setValue(key, (product as any)[key]);
     });
     setThumbnailUrl(product.thumbnail || '');
+    setSavedThumbnailUrl(product.thumbnail || '');
     setIsOpen(true);
   };
 
@@ -63,6 +66,7 @@ export default function AdminProducts() {
     setValue('status', 'draft');
     setValue('featured', false);
     setThumbnailUrl('');
+    setSavedThumbnailUrl('');
     setIsOpen(true);
   };
 
@@ -87,12 +91,15 @@ export default function AdminProducts() {
       if (res.ok && result.success) {
         setIsOpen(false);
         reset();
+        setSavedThumbnailUrl(thumbnailUrl);
         fetchProducts();
         toast.success('Success');
       } else {
+        await removeUnusedUpload(thumbnailUrl, savedThumbnailUrl);
         toast.error(result.message);
       }
     } catch (error: any) {
+      await removeUnusedUpload(thumbnailUrl, savedThumbnailUrl);
       toast.error(error.message);
     }
   };

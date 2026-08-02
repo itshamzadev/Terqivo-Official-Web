@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Calendar, Clock, User } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
+import { assetUrl } from '@/src/lib/utils';
 
 export interface Article {
   _id: string;
@@ -51,7 +52,7 @@ export function FeaturedArticle({ article }: { article: Article | null }) {
         >
           <div className="w-full h-full min-h-[300px] lg:min-h-[400px] bg-muted/20 overflow-hidden relative">
             {article.coverImage ? (
-              <img src={article.coverImage} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              <img src={assetUrl(article.coverImage, 'insights')} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
             ) : (
               <ImagePlaceholder title="Featured Article Cover" className="w-full h-full rounded-none border-0 group-hover:scale-105 transition-transform duration-700" />
             )}
