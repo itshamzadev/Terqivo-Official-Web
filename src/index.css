@@ -2,17 +2,19 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-primary: #0a0a0a;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f4f4f5;
-  --color-secondary-foreground: #18181b;
-  --color-accent: #2563eb;
-  --color-accent-foreground: #ffffff;
-  --color-background: #ffffff;
-  --color-foreground: #0a0a0a;
-  --color-muted: #f4f4f5;
-  --color-muted-foreground: #71717a;
-  --color-border: #e4e4e7;
+  --color-primary: #10233f;
+  --color-primary-foreground: #fffaf0;
+  --color-secondary: #ede7dc;
+  --color-secondary-foreground: #20314b;
+  --color-accent: #b8863a;
+  --color-accent-foreground: #15243b;
+  --color-background: #f8f6f0;
+  --color-foreground: #15243b;
+  --color-muted: #eee9df;
+  --color-muted-foreground: #667085;
+  --color-border: #ded8ca;
+  --color-card: #fffdf8;
+  --color-card-foreground: #15243b;
   
   --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-heading: "Manrope", system-ui, sans-serif;
@@ -20,48 +22,48 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 221.2 83.2% 53.3%;
-    --accent-foreground: 0 0% 98%;
+    --background: 42 33% 96%;
+    --foreground: 216 45% 16%;
+    --card: 42 100% 99%;
+    --card-foreground: 216 45% 16%;
+    --popover: 42 100% 99%;
+    --popover-foreground: 216 45% 16%;
+    --primary: 213 59% 15%;
+    --primary-foreground: 42 80% 97%;
+    --secondary: 40 26% 90%;
+    --secondary-foreground: 214 42% 21%;
+    --muted: 40 26% 92%;
+    --muted-foreground: 218 13% 46%;
+    --accent: 38 53% 50%;
+    --accent-foreground: 216 45% 16%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
+    --border: 42 25% 84%;
+    --input: 42 25% 84%;
+    --ring: 38 53% 50%;
+    --radius: 0.75rem;
   }
   
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 217.2 91.2% 59.8%;
-    --accent-foreground: 0 0% 98%;
+    --background: 218 43% 8%;
+    --foreground: 42 27% 94%;
+    --card: 216 36% 12%;
+    --card-foreground: 42 27% 94%;
+    --popover: 216 36% 12%;
+    --popover-foreground: 42 27% 94%;
+    --primary: 38 55% 59%;
+    --primary-foreground: 218 43% 8%;
+    --secondary: 216 30% 18%;
+    --secondary-foreground: 42 27% 94%;
+    --muted: 216 30% 17%;
+    --muted-foreground: 216 15% 68%;
+    --accent: 38 55% 59%;
+    --accent-foreground: 218 43% 8%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --border: 216 25% 24%;
+    --input: 216 25% 24%;
+    --ring: 38 55% 59%;
   }
 }
 
@@ -72,6 +74,14 @@
   body {
     @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
     font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
+    background-image: radial-gradient(circle at 8% -10%, hsl(var(--accent) / 0.12), transparent 30rem),
+      radial-gradient(circle at 96% 0%, hsl(210 80% 42% / 0.08), transparent 28rem);
+    background-attachment: fixed;
+  }
+  ::selection {
+    background: hsl(var(--accent) / 0.28);
+    color: hsl(var(--foreground));
   }
 }
 
