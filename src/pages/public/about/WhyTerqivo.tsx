@@ -4,23 +4,23 @@ import { Cpu, ShieldCheck, Database, Users } from 'lucide-react';
 export function WhyTerqivo() {
   const reasons = [
     {
-      title: "AI-First Thinking",
-      desc: "We embed artificial intelligence intelligently, optimizing workflows and unlocking new capabilities rather than treating it as an afterthought.",
+      title: "Applied AI",
+      desc: "We apply artificial intelligence where it creates practical value, improving workflows without treating it as an afterthought.",
       icon: Cpu
     },
     {
       title: "Secure by Design",
-      desc: "Security is baked into our architecture from day one. We employ modern encryption, secure protocols, and strict access controls.",
+      desc: "Security is built into our architecture from day one. We use modern encryption, secure protocols, and strict access controls.",
       icon: ShieldCheck
     },
     {
       title: "Scalable Architecture",
-      desc: "Our systems are built to grow. We utilize modern cloud-native principles to ensure your infrastructure handles scale gracefully.",
+      desc: "Our systems are designed to grow. We use modern cloud-native principles so your infrastructure can scale reliably.",
       icon: Database
     },
     {
       title: "Human-Centered Products",
-      desc: "We build for humans. Despite our deep engineering focus, every product must be intuitive, accessible, and elegantly designed.",
+      desc: "We build for people. Alongside deep engineering, every product must be intuitive, accessible, and thoughtfully designed.",
       icon: Users
     }
   ];
@@ -30,7 +30,7 @@ export function WhyTerqivo() {
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Why Terqivo</h2>
-          <p className="text-lg text-muted-foreground">The strategic advantages of partnering with our engineering team.</p>
+          <p className="text-lg text-muted-foreground">The practical advantages of partnering with our engineering team.</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">

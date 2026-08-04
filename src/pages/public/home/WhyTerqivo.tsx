@@ -7,17 +7,17 @@ export function WhyTerqivo() {
     {
       icon: ShieldCheck,
       title: "Uncompromising Quality",
-      description: "Every line of code is reviewed, tested, and optimized for maximum performance, security, and maintainability."
+      description: "Every solution is carefully designed, engineered, tested, and optimized for dependable performance."
     },
     {
       icon: Globe2,
       title: "Global Perspective",
-      description: "We build systems designed to operate on a global scale, handling multi-region deployments effortlessly."
+      description: "We build systems for modern organizations while maintaining practical execution and clear communication."
     },
     {
       icon: Zap,
-      title: "Future-Proof Tech",
-      description: "Leveraging the latest advancements in AI and cloud infrastructure to keep you ahead of the technological curve."
+      title: "Future-Ready Technology",
+      description: "We use modern, maintainable technologies that can evolve alongside your business requirements."
     }
   ];
 
@@ -35,7 +35,7 @@ export function WhyTerqivo() {
               <div>
                 <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Why Terqivo</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  We partner with ambitious companies to build software that drives real business value. Our rigorous standards ensure every project is delivered with precision.
+                  We work with ambitious companies to build reliable software that delivers meaningful business value. Our engineering standards keep every project secure, maintainable, and ready for long-term growth.
                 </p>
               </div>
               <div className="space-y-6">

@@ -65,7 +65,7 @@ export default function ServiceDetails() {
               <div>
                 <h2 className="text-2xl font-heading font-bold mb-4">Overview</h2>
                 <div className="prose prose-slate dark:prose-invert max-w-none">
-                  <Markdown>{service.fullDescription || 'No detailed description available.'}</Markdown>
+                  <Markdown>{service.fullDescription || 'No description is available for this solution.'}</Markdown>
                 </div>
               </div>
               
@@ -88,10 +88,10 @@ export default function ServiceDetails() {
               <div className="bg-muted/30 border border-border rounded-2xl p-6 sticky top-24">
                 <h3 className="text-xl font-heading font-bold mb-4">Interested in this service?</h3>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Contact our engineering team to discuss how we can implement this solution for your business.
+                  Talk to our engineering team about implementing this solution.
                 </p>
                 <Button className="w-full" asChild>
-                  <Link to="/contact">Get in Touch</Link>
+                  <Link to="/contact">Contact Terqivo</Link>
                 </Button>
               </div>
             </div>

@@ -11,7 +11,7 @@ export function CoreValues() {
     {
       icon: Lightbulb,
       title: "Innovation",
-      desc: "We continuously explore new paradigms, pushing the boundaries of what software can achieve in a connected world."
+      desc: "We explore new approaches thoughtfully, turning emerging ideas into useful, responsible software."
     },
     {
       icon: Code2,

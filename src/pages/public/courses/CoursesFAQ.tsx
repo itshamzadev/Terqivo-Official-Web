@@ -26,7 +26,7 @@ export function CoursesFAQ() {
     },
     {
       question: "Are courses free or paid?",
-      answer: "Pricing and access details are shown when a course is published. We offer both open educational resources and premium structured learning programs."
+      answer: "Pricing and access details are shown when a course is published. We offer both open educational resources and structured learning programs."
     },
     {
       question: "Can I access course material after completion?",

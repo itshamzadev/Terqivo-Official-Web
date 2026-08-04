@@ -10,7 +10,7 @@ export function CareersFAQ() {
   const faqs = [
     {
       question: "How do I apply for a position?",
-      answer: "When a role is open, you can apply directly through the 'View Position' button on the job listing. Follow the instructions to submit your profile and any required materials."
+      answer: "When a role is open, you can apply through the 'View Position' button on the listing. Follow the instructions to submit your profile and any required materials."
     },
     {
       question: "Can I submit my profile without an open role?",
@@ -22,7 +22,7 @@ export function CareersFAQ() {
     },
     {
       question: "What happens after I apply?",
-      answer: "Our team reviews submissions to evaluate relevant skills and experience. If there is a potential fit, we will contact you to begin the conversation phase of our hiring process."
+      answer: "Our team reviews submissions for relevant skills and experience. If there is a potential fit, we will contact you to discuss the next steps."
     },
     {
       question: "Does Terqivo offer internships?",

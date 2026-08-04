@@ -30,11 +30,11 @@ export function FinalCTA() {
       <div className="container relative z-10 mx-auto px-4 max-w-4xl text-center">
         <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6">Ready to build the future?</h2>
         <p className="text-xl text-primary-foreground/80 leading-relaxed mx-auto mb-10 max-w-2xl">
-          Partner with Terqivo to transform your vision into robust, scalable software. Let's discuss how our engineering team can support your next project.
+          Partner with Terqivo to turn your vision into reliable software. Let’s discuss how our engineering team can support your next project.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button size="lg" variant="secondary" className="h-14 px-10 text-base shadow-sm" asChild>
-            <Link to="/contact">Get in Touch <ArrowUpRight className="ml-2 h-5 w-5" /></Link>
+            <Link to="/contact">Contact Terqivo <ArrowUpRight className="ml-2 h-5 w-5" /></Link>
           </Button>
           <Button size="lg" variant="outline" className="h-14 px-10 text-base shadow-sm bg-primary/20 text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground hover:text-primary" asChild>
             <Link to="/services">Explore Services</Link>

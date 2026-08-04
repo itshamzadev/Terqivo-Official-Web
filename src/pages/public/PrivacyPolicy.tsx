@@ -46,7 +46,7 @@ export default function PrivacyPolicy() {
                   Terqivo ("we," "our," or "us") respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website, use our software applications, AI-powered products, and digital services (collectively, the "Services").
                 </p>
                 <p className="text-[17px] md:text-[18px] leading-[1.7]">
-                  Please read this Privacy Policy carefully. If you do not agree with the terms of this privacy policy, please do not access the Services.
+                  Please read this Privacy Policy carefully. If you do not agree with the terms of this Privacy Policy, please do not access the Services.
                 </p>
               </div>
 
@@ -69,7 +69,7 @@ export default function PrivacyPolicy() {
               <div className="space-y-4">
                 <h2 className="text-[32px] font-heading font-bold text-foreground mb-4">3. How We Use Your Information</h2>
                 <p className="text-[17px] md:text-[18px] leading-[1.7]">
-                  Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via our Services to:
+                  Accurate information helps us provide a smooth, efficient, and personalized experience. Specifically, we may use information collected about you through our Services to:
                 </p>
                 <ul className="!list-outside list-disc !pl-6 mt-3 mb-4 text-[14px] md:text-[15px] lg:text-[16px] leading-[1.75] text-muted-foreground [&>li]:!mt-0 [&>li]:!mb-[10px] [&>li]:!pl-2 marker:text-muted-foreground">
                   <li><span className="font-semibold text-foreground">Customer support:</span> To respond to your inquiries, troubleshoot issues, and provide technical assistance.</li>
@@ -114,7 +114,7 @@ export default function PrivacyPolicy() {
               <div className="space-y-4">
                 <h2 className="text-[32px] font-heading font-bold text-foreground mb-4">6. Data Retention</h2>
                 <p className="text-[17px] md:text-[18px] leading-[1.7]">
-                  We will only retain your personal information for as long as necessary to fulfill the purposes we collected it for, including for the purposes of satisfying any legal, accounting, or reporting requirements. The specific retention period varies depending on the nature of the data and the purpose for which it is processed.
+                  We will retain your personal information only for as long as necessary to fulfill the purposes for which it was collected, including to satisfy legal, accounting, or reporting requirements. The specific retention period varies depending on the nature of the data and the purpose for which it is processed.
                 </p>
               </div>
 

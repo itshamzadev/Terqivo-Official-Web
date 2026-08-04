@@ -30,7 +30,7 @@ export function FeaturedProduct() {
               </div>
               <h2 className="text-4xl sm:text-5xl font-heading font-bold tracking-tight">Meet Manos AI</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                An intelligent desktop assistant being developed to make computer workflows faster, simpler, and more natural while keeping users in control.
+                An intelligent desktop assistant designed to make computer workflows faster, simpler, and more natural while keeping users in control.
               </p>
             </div>
 

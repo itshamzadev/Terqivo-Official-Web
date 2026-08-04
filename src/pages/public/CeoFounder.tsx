@@ -49,7 +49,7 @@ export default function CeoFounder() {
                 CEO & Founder of Terqivo
               </p>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                “Building intelligent software, AI-powered products, and secure digital systems with a long-term product vision.”
+                  “Building intelligent software, AI-powered products, and secure digital systems with a long-term product vision.”
               </p>
             </div>
           </div>

@@ -3,11 +3,11 @@ import { motion, useReducedMotion } from 'motion/react';
 export function DevelopmentProcess() {
   const shouldReduceMotion = useReducedMotion();
   const stages = [
-    { num: "01", title: "Discover", desc: "Understand the problem, users, and real-world requirements." },
-    { num: "02", title: "Design", desc: "Shape the product experience, structure, and visual direction." },
-    { num: "03", title: "Build", desc: "Develop scalable, maintainable, and modern software." },
-    { num: "04", title: "Validate", desc: "Test usability, performance, reliability, and security." },
-    { num: "05", title: "Improve", desc: "Continue refining the product through feedback and learning." }
+    { num: "01", title: "Discover", desc: "Understand objectives, users, operational needs, and technical requirements." },
+    { num: "02", title: "Design", desc: "Define the product experience, system architecture, and implementation plan." },
+    { num: "03", title: "Build", desc: "Develop, integrate, maintain, and test the core software." },
+    { num: "04", title: "Validate", desc: "Test reliability, performance, usability, security, and overall quality." },
+    { num: "05", title: "Improve", desc: "Continuously refine the product through feedback, data, and ongoing development." }
   ];
 
   const totalDuration = 10;
@@ -18,7 +18,7 @@ export function DevelopmentProcess() {
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Product Development Process</h2>
-          <p className="text-primary-foreground/80 text-lg">A structured approach to engineering digital solutions from conception to deployment.</p>
+          <p className="text-primary-foreground/80 text-lg">A structured engineering approach that transforms ideas into reliable digital products.</p>
         </div>
         
         <div className="relative">

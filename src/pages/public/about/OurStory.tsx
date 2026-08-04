@@ -5,23 +5,23 @@ export function OurStory() {
   const storyPoints = [
     {
       icon: Lightbulb,
-      title: "The Genesis",
-      desc: "Terqivo was created with a singular focus: to engineer reliable, scalable software that solves complex problems without compromising on quality or architectural integrity."
+      title: "Where We Began",
+      desc: "Terqivo was created with a clear focus: engineering reliable, scalable software that solves complex problems without compromising quality or architectural integrity."
     },
     {
       icon: Target,
       title: "Long-Term Vision",
-      desc: "We look beyond immediate trends. Our goal is to build digital infrastructure that organizations can rely on for decades, continuously evolving with emerging technologies."
+      desc: "We look beyond immediate trends. Our goal is to build digital infrastructure that organizations can rely on for years, evolving as technology changes."
     },
     {
       icon: Rocket,
       title: "Engineering Mindset",
-      desc: "Every product we create is rooted in strict engineering principles. We prioritize performance, security, and maintainability at every level of the stack."
+      desc: "Every product we create is grounded in strong engineering principles. We prioritize performance, security, and maintainability at every level of the stack."
     },
     {
       icon: ShieldCheck,
       title: "A Secure Future",
-      desc: "As technology advances, so do the risks. We design systems that are inherently secure, protecting data and privacy as fundamental rights, not afterthoughts."
+      desc: "As technology advances, so do the risks. We design systems with security built in, treating data and privacy as core requirements, not afterthoughts."
     }
   ];
 

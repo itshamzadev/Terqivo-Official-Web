@@ -19,7 +19,7 @@ export function CapabilitiesSection() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Technologies & Capabilities</h2>
-          <p className="text-lg text-muted-foreground">We utilize modern, production-tested technologies to ensure maximum reliability and performance.</p>
+          <p className="text-lg text-muted-foreground">We use modern, production-ready technologies to deliver secure, scalable, and high-performance digital products.</p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">

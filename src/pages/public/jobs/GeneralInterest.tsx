@@ -20,7 +20,7 @@ export function GeneralInterest() {
                 Interested in contributing in the future?
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Even when a suitable role is not listed, professionals interested in Terqivo’s direction may share their profile for future consideration.
+                If you do not see a suitable role, you can still share your profile for future consideration.
               </p>
             </motion.div>
             

@@ -58,7 +58,7 @@ export default function BlogPostDetails() {
           <h1 className="text-4xl md:text-5xl font-heading font-bold mb-6 leading-tight">{post.title}</h1>
           
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <span className="flex items-center"><User className="mr-2 h-4 w-4" /> {post.author || 'TERQIVO Team'}</span>
+            <span className="flex items-center"><User className="mr-2 h-4 w-4" /> {post.author || 'Terqivo Team'}</span>
             <span className="flex items-center"><Calendar className="mr-2 h-4 w-4" /> {post.publishDate ? new Date(post.publishDate).toLocaleDateString() : 'Draft'}</span>
           </div>
         </div>

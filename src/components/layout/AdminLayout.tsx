@@ -46,7 +46,7 @@ export function AdminLayout() {
       {/* Sidebar */}
       <aside className="w-64 bg-background border-r flex flex-col">
         <div className="h-16 flex items-center px-6 border-b">
-          <Link to="/admin/dashboard" className="font-heading font-bold text-xl text-primary">TERQIVO Admin</Link>
+          <Link to="/admin/dashboard" className="font-heading font-bold text-xl text-primary">Terqivo Admin</Link>
         </div>
         
         <div className="flex-1 overflow-y-auto py-4">

@@ -120,7 +120,7 @@ export default function ProductDetails() {
             <div>
               <h2 className="text-2xl font-heading font-bold mb-4">About this product</h2>
               <div className="prose prose-slate dark:prose-invert max-w-none">
-                <Markdown>{product.description || 'No detailed description available.'}</Markdown>
+                <Markdown>{product.description || 'No description is available for this product.'}</Markdown>
               </div>
             </div>
             
@@ -141,7 +141,7 @@ export default function ProductDetails() {
             {product.documentationUrl && (
               <div className="bg-primary/5 p-8 rounded-2xl border border-primary/20 text-center">
                 <h3 className="text-xl font-heading font-bold mb-2">Need help getting started?</h3>
-                <p className="text-muted-foreground mb-6">Read our comprehensive documentation to learn how to integrate and deploy.</p>
+                <p className="text-muted-foreground mb-6">Read the documentation to learn how to integrate and deploy.</p>
                 <Button variant="outline" asChild>
                   <a href={product.documentationUrl} target="_blank" rel="noopener noreferrer">Read Documentation</a>
                 </Button>

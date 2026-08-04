@@ -3,11 +3,11 @@ import { motion, useReducedMotion } from 'motion/react';
 export function EngineeringPhilosophy() {
   const shouldReduceMotion = useReducedMotion();
   const stages = [
-    { num: "01", title: "Discover", desc: "Understand the core problem and real-world requirements." },
-    { num: "02", title: "Design", desc: "Architect the solution and shape the product experience." },
-    { num: "03", title: "Engineer", desc: "Build with precision, utilizing scalable technologies." },
-    { num: "04", title: "Validate", desc: "Test rigorously for performance, security, and edge cases." },
-    { num: "05", title: "Improve", desc: "Iterate continuously based on data and feedback." }
+    { num: "01", title: "Discover", desc: "Understand the core problem, users, and real-world requirements." },
+    { num: "02", title: "Design", desc: "Architect the solution and shape a clear product experience." },
+    { num: "03", title: "Engineer", desc: "Build with precision using scalable, maintainable technologies." },
+    { num: "04", title: "Validate", desc: "Test rigorously for performance, security, reliability, and edge cases." },
+    { num: "05", title: "Improve", desc: "Iterate continuously using data, feedback, and learning." }
   ];
 
   const totalDuration = 10;
@@ -18,7 +18,7 @@ export function EngineeringPhilosophy() {
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Engineering Philosophy</h2>
-          <p className="text-lg text-primary-foreground/70">Our systematic approach to building world-class technology.</p>
+          <p className="text-lg text-primary-foreground/70">Our systematic approach to building reliable, maintainable technology.</p>
         </div>
         
         <div className="relative">

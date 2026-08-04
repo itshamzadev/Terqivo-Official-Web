@@ -47,7 +47,6 @@ export function Header() {
   }, [isMobileMenuOpen]);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
     { name: 'Company', path: '/about' },
     { name: 'Solutions', path: '/services' },
     { name: 'Products', path: '/products' },

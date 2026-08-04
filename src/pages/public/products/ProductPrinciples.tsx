@@ -44,7 +44,7 @@ export function ProductPrinciples() {
             transition={{ delay: 0.1 }}
             className="text-lg text-muted-foreground"
           >
-            Every product is treated as a complete system—combining user experience, engineering quality, security, performance, and long-term maintainability.
+            Every product is treated as a complete system, combining user experience, engineering quality, security, performance, and long-term maintainability.
           </motion.p>
         </div>
 

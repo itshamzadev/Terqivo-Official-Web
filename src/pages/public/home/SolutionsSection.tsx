@@ -5,12 +5,12 @@ import { Button } from '@/src/components/ui/button';
 
 export function SolutionsSection() {
   const solutions = [
-    { icon: Code, title: 'Custom Software', desc: 'Enterprise-grade applications built for scale, performance, and security.' },
-    { icon: Cpu, title: 'Artificial Intelligence', desc: 'Machine learning integrations and automated workflows for modern business.' },
-    { icon: Globe, title: 'Cloud Architecture', desc: 'Resilient cloud infrastructure setup, migration, and structural optimization.' },
-    { icon: Smartphone, title: 'Mobile Platforms', desc: 'Native and cross-platform mobile experiences for iOS and Android.' },
-    { icon: Shield, title: 'Digital Security', desc: 'Security audits and secure-by-design architectural implementation.' },
-    { icon: Database, title: 'Data Engineering', desc: 'Robust data pipelines, analytics infrastructure, and intelligence.' }
+    { icon: Code, title: 'Custom Software', desc: 'Purpose-built software designed around your operations, users, and long-term goals.' },
+    { icon: Cpu, title: 'Artificial Intelligence', desc: 'Practical AI solutions that automate processes, improve decisions, and enhance digital experiences.' },
+    { icon: Globe, title: 'Cloud Architecture', desc: 'Secure and scalable cloud infrastructure, migration, integration, and deployment solutions.' },
+    { icon: Smartphone, title: 'Mobile Platforms', desc: 'Modern mobile applications designed for reliable performance across supported devices.' },
+    { icon: Shield, title: 'Digital Security', desc: 'Security-focused systems designed to protect data, users, applications, and digital operations.' },
+    { icon: Database, title: 'Data Engineering', desc: 'Reliable data pipelines, integrations, analytics infrastructure, and intelligent processing systems.' }
   ];
 
   return (
@@ -19,7 +19,7 @@ export function SolutionsSection() {
         <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
           <div className="max-w-2xl">
             <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Technology Solutions</h2>
-            <p className="text-lg text-muted-foreground">Engineering solutions across the modern technology stack to solve complex challenges.</p>
+            <p className="text-lg text-muted-foreground">Engineering dependable technology solutions for modern business challenges.</p>
           </div>
           <Button variant="outline" asChild>
             <Link to="/services">View All Solutions</Link>

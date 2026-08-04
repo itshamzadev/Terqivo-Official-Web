@@ -5,10 +5,10 @@ import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function Vision() {
   const points = [
-    "Pioneering future technology architectures.",
-    "Advancing applied Artificial Intelligence.",
+    "Designing technology architectures for future needs.",
+    "Applying artificial intelligence to practical problems.",
     "Designing resilient digital infrastructure.",
-    "Fostering long-term innovation cycles."
+    "Supporting steady, long-term innovation."
   ];
 
   return (
@@ -40,7 +40,7 @@ export function Vision() {
             <div>
               <h2 className="text-4xl font-heading font-bold mb-6">Our Vision</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We envision a future where intelligent systems and secure digital infrastructure seamlessly integrate to elevate human potential. By committing to engineering excellence, we are actively shaping a world powered by robust, thoughtful technology.
+                We envision a future where intelligent systems and secure digital infrastructure work together to expand human potential. Through engineering excellence, we build practical technology for a more capable, connected world.
               </p>
             </div>
             

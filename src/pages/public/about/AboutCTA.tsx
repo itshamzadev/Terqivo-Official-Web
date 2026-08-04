@@ -30,7 +30,7 @@ export function AboutCTA() {
       <div className="container relative z-10 mx-auto px-4 max-w-4xl text-center">
         <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6">Let's Build the Future Together</h2>
         <p className="text-xl text-primary-foreground/80 leading-relaxed mx-auto mb-10 max-w-2xl">
-          Partner with Terqivo to transform your vision into robust, scalable software. Discover our products or reach out to discuss your next big idea.
+          Partner with Terqivo to turn your vision into reliable, maintainable software. Explore our products or contact our team to discuss your next project.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button size="lg" variant="secondary" className="h-14 px-10 text-base shadow-sm" asChild>

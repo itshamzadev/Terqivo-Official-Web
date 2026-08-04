@@ -24,7 +24,7 @@ export function Mission() {
             <div>
               <h2 className="text-4xl font-heading font-bold mb-6">Our Mission</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We exist to build technology that moves humanity forward. Our mission is to engineer software ecosystems that not only solve today's complex challenges but also anticipate the needs of tomorrow's interconnected world.
+                We build technology that helps organizations make meaningful progress. Our mission is to engineer software ecosystems that solve today's complex challenges and adapt to tomorrow's changing needs.
               </p>
             </div>
             

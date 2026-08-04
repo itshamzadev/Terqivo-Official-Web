@@ -88,7 +88,7 @@ export function FeaturedArticle({ article }: { article: Article | null }) {
               
               <Button asChild>
                 <Link to={`/blog/${article.slug}`}>
-                  Read article <ArrowRight className="ml-2 h-4 w-4" />
+                  Read Article <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>

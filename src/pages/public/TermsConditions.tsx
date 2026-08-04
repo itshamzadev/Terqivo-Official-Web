@@ -157,7 +157,7 @@ export default function TermsConditions() {
               <div className="space-y-4">
                 <h2 className="text-[28px] font-heading font-bold text-foreground mb-4">15. Limitation of Liability</h2>
                 <p className="text-[16px] leading-[1.8]">
-                  In no event will Terqivo, our directors, employees, or agents be liable to you or any third party for any direct, indirect, consequential, exemplary, incidental, special, or punitive damages, including lost profit, lost revenue, loss of data, or other damages arising from your use of the Services, even if we have been advised of the possibility of such damages.
+                  In no event will Terqivo, our directors, employees, or agents be liable to you or any third party for any direct, indirect, consequential, exemplary, incidental, special, or punitive damages, including lost profits, lost revenue, loss of data, or other damages arising from your use of the Services, even if we have been advised of the possibility of such damages.
                 </p>
               </div>
 
@@ -178,7 +178,7 @@ export default function TermsConditions() {
               <div className="space-y-4">
                 <h2 className="text-[28px] font-heading font-bold text-foreground mb-4">18. Governing Law</h2>
                 <p className="text-[16px] leading-[1.8]">
-                  These Terms and your use of the Services shall be governed by and construed in accordance with applicable laws, without regard to its conflict of law principles.
+                  These Terms and your use of the Services shall be governed by and construed in accordance with applicable laws, without regard to conflicts of law principles.
                 </p>
               </div>
 

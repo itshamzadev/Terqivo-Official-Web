@@ -64,7 +64,7 @@ export default function AdminLogin() {
             <Lock className="h-6 w-6 text-primary" />
           </div>
           <CardTitle className="text-2xl font-heading font-bold">Admin Access</CardTitle>
-          <CardDescription>Sign in to manage TERQIVO platform</CardDescription>
+          <CardDescription>Sign in to manage the Terqivo platform</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

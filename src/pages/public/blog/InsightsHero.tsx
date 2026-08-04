@@ -60,7 +60,7 @@ export function InsightsHero() {
             </div>
             
             <p className="text-sm text-muted-foreground font-medium pt-4">
-              New knowledge is published as articles become available.
+              New articles will appear as they are published.
             </p>
           </motion.div>
           

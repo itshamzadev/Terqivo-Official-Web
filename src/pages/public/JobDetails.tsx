@@ -79,7 +79,7 @@ export default function JobDetails() {
               <div>
                 <h2 className="text-2xl font-heading font-bold mb-4">About the Role</h2>
                 <div className="prose prose-slate dark:prose-invert max-w-none">
-                  <Markdown>{job.description || 'No detailed description available.'}</Markdown>
+                  <Markdown>{job.description || 'No description is available for this role.'}</Markdown>
                 </div>
               </div>
               

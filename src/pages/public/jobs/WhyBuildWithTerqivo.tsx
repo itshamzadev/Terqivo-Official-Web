@@ -44,7 +44,7 @@ export function WhyBuildWithTerqivo() {
             transition={{ delay: 0.1 }}
             className="text-lg text-muted-foreground"
           >
-            Terqivo is being built around thoughtful product development, continuous learning, engineering responsibility, and practical innovation.
+            Terqivo is built around thoughtful product development, continuous learning, engineering responsibility, and practical innovation.
           </motion.p>
         </div>
 

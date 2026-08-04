@@ -99,7 +99,7 @@ export function OpenPositions({ jobs, isLoading, hasError }: OpenPositionsProps)
                     )}
                     {(job.location || job.workMode) && (
                       <span className="flex items-center gap-1.5 bg-muted/30 px-2.5 py-1 rounded-md border">
-                        <MapPin className="h-4 w-4" /> {job.workMode ? `${job.location ? job.location + ' • ' : ''}${job.workMode}` : job.location}
+                            <MapPin className="h-4 w-4" /> {job.workMode ? `${job.location ? job.location + ' • ' : ''}${job.workMode}` : job.location}
                       </span>
                     )}
                     {job.employmentType && (

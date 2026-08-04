@@ -10,11 +10,11 @@ import { useSettings } from '../../components/SettingsContext';
 import { useAuth } from '../../components/auth/AuthContext';
 
 const contactSchema = z.object({
-  fullName: z.string().min(2, "Full name is required"),
-  email: z.string().email("Invalid email address"),
+  fullName: z.string().min(2, "Please enter your full name."),
+  email: z.string().email("Please enter a valid email address."),
   company: z.string().optional(),
-  subject: z.string().min(2, "Subject is required"),
-  message: z.string().min(10, "Message must be at least 10 characters")
+  subject: z.string().min(2, "Please enter a subject."),
+  message: z.string().min(10, "Please enter at least 10 characters.")
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
@@ -68,10 +68,10 @@ export default function Contact() {
               Contact Terqivo
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold tracking-tight text-foreground leading-[1.1] mb-6">
-              Let's build something <span className="text-accent">great</span> together.
+              Let's build something <span className="text-accent">useful</span> together.
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-sans">
-              Reach out to our team to discuss technology solutions, partnerships, or how we can help your business scale.
+              Tell us what you are building, what you need to improve, or how we can work together.
             </p>
           </motion.div>
         </div>
@@ -85,7 +85,7 @@ export default function Contact() {
             className="lg:col-span-5 xl:col-span-4 space-y-8"
           >
             <div className="bg-muted/10 border rounded-[24px] p-8 shadow-sm">
-              <h3 className="text-2xl font-heading font-bold mb-8">Get in touch</h3>
+              <h3 className="text-2xl font-heading font-bold mb-8">Contact our team</h3>
               
               <div className="space-y-8">
                 <div className="flex items-start gap-4 group">
@@ -120,7 +120,7 @@ export default function Contact() {
                 <Globe className="h-8 w-8 text-accent mb-4" />
                 <h4 className="text-xl font-heading font-bold mb-2">{settings?.contact?.locationLabel || 'Remote-First Company'}</h4>
                 <p className="text-primary-foreground/80 leading-relaxed">
-                  {settings?.contact?.locationDescription || 'Serving clients worldwide. We operate globally to deliver premium software and AI engineering.'}
+                  {settings?.contact?.locationDescription || 'Serving clients worldwide through focused software and AI engineering.'}
                 </p>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function Contact() {
                     <label className="text-sm font-semibold text-foreground">Company <span className="text-muted-foreground font-normal">(Optional)</span></label>
                     <Input 
                       {...register("company")} 
-                      placeholder="Your Company Inc." 
+                      placeholder="Your company"
                       className="h-12 bg-muted/10 border-muted-foreground/20 focus-visible:ring-accent"
                     />
                   </div>
@@ -198,7 +198,7 @@ export default function Contact() {
                       <div className="p-4 bg-green-50/50 text-green-700 rounded-xl border border-green-200/50 flex items-start gap-3">
                         <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                         <p className="text-sm font-medium leading-relaxed">
-                          Thank you! Your message has been sent successfully. We'll get back to you as soon as possible.
+                          Thanks - your message has been sent. We will be in touch soon.
                         </p>
                       </div>
                     </motion.div>
@@ -214,7 +214,7 @@ export default function Contact() {
                       <div className="p-4 bg-red-50/50 text-red-700 rounded-xl border border-red-200/50 flex items-start gap-3">
                         <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                         <p className="text-sm font-medium leading-relaxed">
-                          There was an error sending your message. Please try again or contact us directly via email.
+                          We could not send your message. Please try again or email us directly.
                         </p>
                       </div>
                     </motion.div>

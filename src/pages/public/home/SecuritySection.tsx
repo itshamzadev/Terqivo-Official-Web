@@ -6,9 +6,9 @@ import { SecurityVisual } from './SecurityVisual';
 
 export function SecuritySection() {
   const items = [
-    { icon: Lock, title: "Data Encryption", desc: "End-to-end encryption for all sensitive data in transit and at rest." },
-    { icon: FileKey, title: "Access Control", desc: "Role-based access controls and robust identity management systems." },
-    { icon: ServerCrash, title: "High Availability", desc: "Redundant architectures guaranteeing 99.99% uptime for mission-critical systems." }
+    { icon: Lock, title: "Data Encryption", desc: "Protect sensitive information during storage and transmission." },
+    { icon: FileKey, title: "Access Control", desc: "Use secure authentication and role-based authorization systems." },
+    { icon: ServerCrash, title: "High Availability", desc: "Design resilient infrastructure that supports stable and reliable operations." }
   ];
 
   return (
@@ -23,7 +23,7 @@ export function SecuritySection() {
           >
             <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Security & Trust</h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-              We design software with a security-first mindset. From secure authentication protocols to hardened cloud infrastructure, your data's integrity is our highest priority.
+              Security is integrated into every stage of our engineering process. From access management to infrastructure reliability, we build systems designed to protect important data and operations.
             </p>
             <div className="space-y-6">
               {items.map((item, i) => (

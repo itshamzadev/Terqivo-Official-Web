@@ -60,7 +60,7 @@ export function CoursesHero() {
             </div>
             
             <p className="text-sm text-muted-foreground font-medium pt-4">
-              Courses will appear as they are prepared and published.
+              New courses will appear here as they are published.
             </p>
           </motion.div>
           

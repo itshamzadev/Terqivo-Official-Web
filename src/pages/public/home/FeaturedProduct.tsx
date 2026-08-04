@@ -49,7 +49,7 @@ export function FeaturedProduct() {
                   Meet Manos AI
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  An intelligent desktop assistant being developed to make everyday computer workflows faster, simpler, and more natural.
+                  An intelligent desktop assistant designed to simplify everyday computer tasks, improve productivity, and create a more efficient digital workflow.
                 </p>
               </div>
 

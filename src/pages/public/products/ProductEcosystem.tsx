@@ -13,9 +13,9 @@ export function ProductEcosystem() {
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            <h2 className="text-3xl md:text-4xl font-heading font-bold">Products that can work together.</h2>
+            <h2 className="text-3xl md:text-4xl font-heading font-bold">Products that work together.</h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Terqivo’s long-term direction is to build a connected ecosystem of intelligent products, software platforms, automation tools, and secure digital systems.
+              Terqivo’s long-term direction is to build connected intelligent products, software platforms, automation tools, and secure digital systems.
             </p>
           </motion.div>
           

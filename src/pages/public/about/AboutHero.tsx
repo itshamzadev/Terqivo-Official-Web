@@ -15,13 +15,13 @@ export function AboutHero() {
             className="space-y-6"
           >
             <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold text-muted-foreground bg-background">
-              The Terqivo Company
+              Software Company &bull; Build for Generations
             </div>
             <h1 className="text-5xl md:text-6xl font-heading font-bold leading-tight tracking-tight">
-              Engineering Tomorrow's Technology.
+              Engineering Technology for Tomorrow.
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
-              We are a global technology company focused on building intelligent products, secure digital infrastructure, and robust software architectures that stand the test of time.
+              We are a global technology company focused on building intelligent products, secure digital infrastructure, and reliable software architectures designed for long-term use.
             </p>
           </motion.div>
           <motion.div

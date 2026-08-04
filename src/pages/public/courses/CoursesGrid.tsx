@@ -64,7 +64,7 @@ export function CoursesGrid({ courses, isLoading, hasError }: CoursesGridProps) 
         <div className="mb-12 max-w-2xl">
           <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Explore Terqivo courses</h2>
           <p className="text-lg text-muted-foreground">
-            Published practical learning experiences will appear here.
+            Published courses will appear here.
           </p>
         </div>
 

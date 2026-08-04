@@ -33,7 +33,7 @@ export function EngineeringCapabilities() {
             <div>
               <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Complete engineering capabilities.</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Solutions are developed as complete systems—not isolated screens or disconnected features. We construct every layer with intent.
+            Solutions are developed as complete systems, not isolated screens or disconnected features. We construct every layer with intent.
               </p>
             </div>
             

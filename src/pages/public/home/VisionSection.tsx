@@ -37,13 +37,13 @@ export function VisionSection() {
                 </div>
                 <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Building for the long term.</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Technology is rapidly evolving, but the principles of good engineering remain constant. Terqivo is dedicated to crafting digital infrastructure that not only solves today's challenges but is robust enough to adapt to tomorrow's innovations.
+                  Technology changes rapidly, but strong engineering principles remain constant. Terqivo is committed to building practical digital infrastructure that supports today’s challenges while remaining adaptable for tomorrow’s opportunities.
                 </p>
              </div>
              
              <div className="pt-4">
                 <Button variant="link" className="p-0 text-primary font-semibold text-lg hover:text-accent" asChild>
-                  <Link to="/about">Read our full methodology <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  <Link to="/about">Read Our Full Methodology <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
              </div>
            </motion.div>
