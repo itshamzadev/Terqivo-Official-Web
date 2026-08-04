@@ -8,6 +8,7 @@ import { sendTemplateEmail } from '../utils/emailService';
 import { createRateLimiter } from '../middleware/rateLimit';
 import { optionalUser, type AuthRequest } from '../middleware/auth';
 import { User } from '../models/User';
+import { formatWhatsAppMessage, sendAdminWhatsApp } from '../utils/whatsappService';
 
 const router = Router();
 const emailIsValid = (value: unknown) => typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -23,6 +24,15 @@ router.post('/', createRateLimiter(5, 15 * 60 * 1000), optionalUser, async (req:
       void sendTemplateEmail({ to: email, templateKey: 'contact_message_received', data: { applicantName: fullName, subject, referenceNumber: item.referenceNumber }, relatedEntityType: 'ContactMessage', relatedEntityId: String(item._id), category: 'contact' }).catch(() => undefined);
       void sendTemplateEmail({ to: settings.email?.adminNotificationEmail || process.env.ADMIN_NOTIFICATION_EMAIL || 'support@terqivo.com', templateKey: 'contact_admin_notification', data: { applicantName: fullName, email, subject, message, adminUrl: `${process.env.APP_URL || ''}/admin/messages` }, relatedEntityType: 'ContactMessage', relatedEntityId: String(item._id), category: 'contact' }).catch(() => undefined);
     }
+    void sendAdminWhatsApp({
+      eventType: 'contact',
+      relatedEntityType: 'ContactMessage',
+      relatedEntityId: String(item._id),
+      message: formatWhatsAppMessage('New Contact Form Message', [
+        ['Name', fullName], ['Email', email], ['Phone', clean(req.body.phone)], ['Company', clean(req.body.company)],
+        ['Subject', subject], ['Message', message], ['Reference', item.referenceNumber],
+      ], `${process.env.APP_URL || ''}/admin/messages`),
+    }).catch((error) => console.warn('WhatsApp contact notification failed:', error?.message || 'unknown error'));
     res.status(201).json({ success: true, message: 'Message sent successfully', data: { referenceNumber: item.referenceNumber } });
   } catch (error: any) { res.status(400).json({ success: false, message: error?.message || 'Could not submit message' }); }
 });

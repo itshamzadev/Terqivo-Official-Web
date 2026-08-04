@@ -10,6 +10,7 @@ import { sendTemplateEmail } from "../utils/emailService";
 import { User } from "../models/User";
 import { SiteSettings } from "../models/SiteSettings";
 import crypto from "crypto";
+import { formatWhatsAppMessage, sendAdminWhatsApp } from "../utils/whatsappService";
 
 const router = Router();
 const screenshotUpload = createPrivateUpload("course-payment-screenshots", 5 * 1024 * 1024);
@@ -78,6 +79,16 @@ async function notifyCourseRequest(item: any) {
   const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null;
   const recipient = linkedUser?.email || item.applicantEmailSnapshot || item.email;
   const data = { applicantName: item.applicantName, email: item.email, phone: item.phone, courseTitle: item.courseTitleSnapshot, requestNumber: item.requestNumber, amount: item.amountSnapshot, currency: item.currencySnapshot?.code || "", paymentMethod: item.paymentMethodSnapshot, transactionId: item.transactionId, status: item.status, adminUrl: `${process.env.APP_URL || ""}/admin/enrollments` };
+  void sendAdminWhatsApp({
+    eventType: "course",
+    relatedEntityType: "CourseEnrollmentRequest",
+    relatedEntityId: String(item._id),
+    message: formatWhatsAppMessage("New Course Enrollment / Order", [
+      ["Applicant", item.applicantName], ["Email", item.email], ["Phone", item.phone], ["Course", item.courseTitleSnapshot],
+      ["Amount", `${item.amountSnapshot || 0} ${item.currencySnapshot?.code || ""}`], ["Payment method", item.paymentMethodSnapshot],
+      ["Transaction ID", item.transactionId], ["Status", item.status], ["Reference", item.requestNumber], ["Message", item.message],
+    ], data.adminUrl),
+  }).catch((error) => console.warn("WhatsApp course notification failed:", error?.message || "unknown error"));
   const settings = await (await import("../models/SiteSettings")).SiteSettings.getSettings();
   if (settings.email?.sendCourseEnrollmentEmails === false) return;
   const applicant = await sendTemplateEmail({ to: recipient, templateKey: "course_enrollment_received", data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), category: "course" });
@@ -87,6 +98,15 @@ async function notifyCourseRequest(item: any) {
 
 async function notifyCourseEvent(item: any, templateKey: string, data: Record<string, unknown>, sentBy?: string) {
   const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null; const recipient = linkedUser?.email || item.applicantEmailSnapshot || item.email;
+  void sendAdminWhatsApp({
+    eventType: templateKey.includes("payment") ? "payment" : "course",
+    relatedEntityType: "CourseEnrollmentRequest",
+    relatedEntityId: String(item._id),
+    message: formatWhatsAppMessage(`Course ${templateKey.includes("approved") ? "Approved" : templateKey.includes("rejected") ? "Rejected" : "Updated"}`, [
+      ["Applicant", item.applicantName], ["Email", item.email], ["Course", item.courseTitleSnapshot], ["Reference", item.requestNumber],
+      ["Status", item.status], ["Admin note", item.adminNote],
+    ], `${process.env.APP_URL || ""}/admin/enrollments`),
+  }).catch((error) => console.warn("WhatsApp course event notification failed:", error?.message || "unknown error"));
   const result = await sendTemplateEmail({ to: recipient, templateKey, data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), sentBy, category: templateKey.includes("payment") ? "payment" : "course" });
   await CourseEnrollmentRequest.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: templateKey, templateKey, recipient, sentAt: new Date(), sentBy, status: result.status, errorSummary: result.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
   return result;

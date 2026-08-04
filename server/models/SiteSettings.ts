@@ -52,6 +52,15 @@ const siteSettingsSchema = new mongoose.Schema({
     jobWhatsAppNumber: { type: String, default: '' },
     jobWhatsAppMessage: { type: String, default: 'Hello Terqivo, I want to discuss the {jobTitle} opportunity.' },
   },
+  whatsapp: {
+    enabled: { type: Boolean, default: true },
+    adminPhone: { type: String, default: '03470028168' },
+    notifyOnContact: { type: Boolean, default: true },
+    notifyOnCourseEnrollment: { type: Boolean, default: true },
+    notifyOnJobApplication: { type: Boolean, default: true },
+    notifyOnPayment: { type: Boolean, default: true },
+    notifyOnEmail: { type: Boolean, default: true },
+  },
   userAccess: {
     requireAccountForCourseEnrollment: { type: Boolean, default: true },
     requireVerifiedEmailForCourseEnrollment: { type: Boolean, default: true },

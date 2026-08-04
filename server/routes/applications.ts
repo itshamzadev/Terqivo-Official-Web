@@ -12,6 +12,7 @@ import { createRateLimiter } from "../middleware/rateLimit";
 import { optionalUser, type AuthRequest } from "../middleware/auth";
 import { User } from "../models/User";
 import { SiteSettings } from "../models/SiteSettings";
+import { formatWhatsAppMessage, sendAdminWhatsApp } from "../utils/whatsappService";
 
 const router = Router();
 const applicationUpload = createPrivateApplicationUpload(10 * 1024 * 1024);
@@ -25,6 +26,16 @@ function bool(value: unknown) { return value === true || value === "true" || val
 async function sendApplicationEmails(item: any) {
   const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null; const recipient = linkedUser?.email || item.email;
   const data = { applicantName: item.applicantName || item.name, email: recipient, phone: item.phone, jobTitle: item.jobTitleSnapshot, applicationNumber: item.applicationNumber, status: item.applicationStatus || item.status, paymentStatus: item.paymentStatus, amount: item.paymentAmountSnapshot, currency: item.currencySnapshot?.code || "", transactionId: item.transactionId, adminUrl: `${process.env.APP_URL || ""}/admin/applications` };
+  void sendAdminWhatsApp({
+    eventType: "job",
+    relatedEntityType: "JobApplication",
+    relatedEntityId: String(item._id),
+    message: formatWhatsAppMessage("New Job Application", [
+      ["Applicant", item.applicantName || item.name], ["Email", item.email], ["Phone", item.phone], ["City", item.currentCity],
+      ["Job", item.jobTitleSnapshot], ["Application #", item.applicationNumber], ["Payment", item.paymentStatus],
+      ["Transaction ID", item.transactionId], ["Cover letter", item.coverLetter],
+    ], data.adminUrl),
+  }).catch((error) => console.warn("WhatsApp job notification failed:", error?.message || "unknown error"));
   const settingsEmail = (await import("../models/SiteSettings")).SiteSettings;
   const settings = await settingsEmail.getSettings();
   if (settings.email?.sendJobApplicationEmails === false) return;
@@ -42,6 +53,17 @@ async function sendApplicationEventEmail(item: any, templateKey: string, data: R
   const settings = await (await import("../models/SiteSettings")).SiteSettings.getSettings();
   if (templateKey.includes("payment") && settings.email?.sendPaymentStatusEmails === false) return { success: false, status: "skipped" as const, message: "Payment emails are disabled" };
   const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null; const recipient = linkedUser?.email || item.email;
+  void sendAdminWhatsApp({
+    eventType: templateKey.includes("payment") ? "payment" : "job",
+    relatedEntityType: "JobApplication",
+    relatedEntityId: String(item._id),
+    message: formatWhatsAppMessage(`Job Application ${templateKey.includes("payment") ? "Payment Update" : "Status Update"}`, [
+      ["Applicant", item.applicantName || item.name], ["Email", item.email], ["Job", item.jobTitleSnapshot],
+      ["Application #", item.applicationNumber], ["Application status", item.applicationStatus], ["Payment status", item.paymentStatus],
+      ["Amount", `${item.paymentAmountSnapshot || 0} ${item.currencySnapshot?.code || ""}`], ["Transaction ID", item.transactionId],
+      ["Admin note", item.adminNote],
+    ], `${process.env.APP_URL || ""}/admin/applications`),
+  }).catch((error) => console.warn("WhatsApp job event notification failed:", error?.message || "unknown error"));
   const result = await sendTemplateEmail({ to: recipient, templateKey, data, relatedEntityType: "JobApplication", relatedEntityId: String(item._id), sentBy, category: templateKey.includes("payment") ? "payment" : "job" });
   await JobApplication.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: templateKey, templateKey, recipient, sentAt: new Date(), sentBy, status: result.status, errorSummary: result.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
   return result;

@@ -30,3 +30,11 @@ Before deploying, configure the same persistent MongoDB connection string on eve
 - `GRIDFS_BUCKET=terqivoUploads` (optional; keep the default unless you need a different bucket)
 
 Do not rely on the container's `public/uploads` folder for production data. It is only a local fallback. The `/api/health` endpoint reports a non-2xx response when production cannot connect to MongoDB, preventing the app from silently running with non-persistent content.
+
+## WhatsApp admin alerts
+
+The admin panel includes WhatsApp Alerts and WhatsApp Logs. The default free provider is `WHATSAPP_PROVIDER=web`: open `/admin/whatsapp`, scan the QR code with WhatsApp > Linked devices, and the authenticated session is stored in MongoDB. Contact messages, course enrollment/orders, job applications, and payment/status events are logged and sent to the configured admin number.
+
+The free provider is an unofficial WhatsApp Web client and can disconnect or be blocked by WhatsApp. For the official Cloud API instead, set `WHATSAPP_PROVIDER=cloud` and configure `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, and `WHATSAPP_API_VERSION`. The token is never sent to the browser.
+
+For messages sent outside an active WhatsApp conversation, configure an approved template using `WHATSAPP_NOTIFICATION_TEMPLATE` and `WHATSAPP_TEMPLATE_LANGUAGE`; otherwise the integration uses a text message when Meta permits it.

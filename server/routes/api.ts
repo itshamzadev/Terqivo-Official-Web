@@ -17,6 +17,7 @@ import courseEnrollmentRequestRoutes from './courseEnrollmentRequests';
 import emailRoutes from './email';
 import accountRoutes from './account';
 import userRoutes from './users';
+import whatsappRoutes from './whatsapp';
 
 const router = Router();
 
@@ -40,5 +41,6 @@ router.use('/course-enrollment-requests', courseEnrollmentRequestRoutes);
 router.use('/email', emailRoutes);
 router.use('/account', accountRoutes);
 router.use('/users', userRoutes);
+router.use('/whatsapp', whatsappRoutes);
 
 export default router;

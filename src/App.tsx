@@ -45,6 +45,8 @@ import AdminEmailSettings from './pages/admin/AdminEmailSettings';
 import AdminEmailTemplates from './pages/admin/AdminEmailTemplates';
 import AdminEmailLogs from './pages/admin/AdminEmailLogs';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminWhatsAppSettings from './pages/admin/AdminWhatsAppSettings';
+import AdminWhatsAppLogs from './pages/admin/AdminWhatsAppLogs';
 import { AdminAuthProvider } from './components/auth/AdminAuthContext';
 import Login from './pages/public/Login';
 import Signup from './pages/public/Signup';
@@ -119,6 +121,8 @@ export default function App() {
           <Route path="email-templates" element={<AdminEmailTemplates />} />
           <Route path="email-logs" element={<AdminEmailLogs />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="whatsapp" element={<AdminWhatsAppSettings />} />
+          <Route path="whatsapp-logs" element={<AdminWhatsAppLogs />} />
         </Route>
       </Routes>
     </Router>
