@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useSettings } from '../SettingsContext';
-import { ProgressiveImage } from '../ui/progressive-image';
+import { BrandLogo } from './BrandLogo';
 
 export function Footer() {
   const { settings } = useSettings();
@@ -11,13 +11,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
           <div className="lg:col-span-2">
             <Link to="/" className="inline-block mb-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm">
-              {settings?.branding?.logoUrl ? (
-                <ProgressiveImage src={settings.branding.logoUrl} alt={settings.general.companyName} frameClassName="inline-flex h-8 w-auto" className="h-8 w-auto object-contain" loading="eager" />
-              ) : (
-                <span className="font-heading font-black text-2xl tracking-tighter text-primary">
-                  {settings?.general?.companyName?.toUpperCase() || 'TERQIVO'}<span className="text-accent">.</span>
-                </span>
-              )}
+              <BrandLogo size="footer" />
             </Link>
             <p className="text-base text-muted-foreground font-sans max-w-sm whitespace-pre-line">
               {settings?.footer?.description || settings?.general?.companyDescription}

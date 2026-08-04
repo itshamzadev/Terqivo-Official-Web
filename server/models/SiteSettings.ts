@@ -26,8 +26,8 @@ const siteSettingsSchema = new mongoose.Schema({
     faviconUrl: { type: String, default: '' },
   },
   seo: {
-    defaultTitle: { type: String, default: 'Terqivo — AI, Software and Intelligent Digital Products' },
-    defaultDescription: { type: String, default: 'Terqivo builds AI-powered products, modern software platforms, business automation systems, and secure digital solutions.' },
+    defaultTitle: { type: String, default: 'Terqivo | Software Engineering, AI & Digital Products' },
+    defaultDescription: { type: String, default: 'Terqivo is a Pakistan-based software engineering company building dependable web platforms, AI products, automation systems, and secure digital solutions.' },
     ogImageUrl: { type: String, default: '' },
   },
   footer: {

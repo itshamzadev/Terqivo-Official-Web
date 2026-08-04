@@ -86,8 +86,8 @@ const defaultSettings: SiteSettings = {
     faviconUrl: ''
   },
   seo: {
-    defaultTitle: 'Terqivo — AI, Software and Intelligent Digital Products',
-    defaultDescription: 'Terqivo builds AI-powered products, modern software platforms, business automation systems, and secure digital solutions.',
+    defaultTitle: 'Terqivo | Software Engineering, AI & Digital Products',
+    defaultDescription: 'Terqivo is a Pakistan-based software engineering company building dependable web platforms, AI products, automation systems, and secure digital solutions.',
     ogImageUrl: ''
   },
   footer: {
@@ -156,10 +156,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           link.href = data.branding.faviconUrl;
         }
 
-        // Update basic SEO
-        if (data.seo?.defaultTitle) {
-          document.title = data.seo.defaultTitle;
-        }
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);

@@ -3,15 +3,13 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, UserCircle } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { AnimatePresence, motion } from 'motion/react';
-import { useSettings } from '../SettingsContext';
 import { useAuth } from '../auth/AuthContext';
-import { ProgressiveImage } from '../ui/progressive-image';
+import { BrandLogo } from './BrandLogo';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { settings } = useSettings();
   const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
@@ -78,13 +76,7 @@ export function Header() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm" aria-label="Terqivo Home">
-              {settings?.branding?.logoUrl ? (
-                <ProgressiveImage src={settings.branding.logoUrl} alt={settings.general.companyName} frameClassName="inline-flex h-8 w-auto" className="h-8 w-auto object-contain" loading="eager" />
-              ) : (
-                <span className="font-heading font-black text-2xl tracking-tighter text-primary">
-                  {settings?.general?.companyName?.toUpperCase() || 'TERQIVO'}<span className="text-accent">.</span>
-                </span>
-              )}
+              <BrandLogo />
             </Link>
             
             {/* Desktop Navigation */}
