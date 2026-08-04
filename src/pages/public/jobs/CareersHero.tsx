@@ -4,6 +4,7 @@ import { Button } from '@/src/components/ui/button';
 import { ArrowDown } from 'lucide-react';
 
 import careersHero from '@/src/assets/careers-hero.png';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function CareersHeroVisual() {
   return (
@@ -13,7 +14,7 @@ export function CareersHeroVisual() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="w-full aspect-[4/3] rounded-[24px] shadow-sm border bg-background flex flex-col items-center justify-center overflow-hidden hover:scale-[1.01] hover:-translate-y-[2px] transition-transform duration-300 relative"
     >
-      <img src={careersHero} alt="Careers at Terqivo" className="w-full h-full object-contain object-center absolute inset-0" />
+      <ProgressiveImage src={careersHero} alt="Careers at Terqivo" frameClassName="absolute inset-0" className="w-full h-full object-contain object-center absolute inset-0" loading="eager" />
     </motion.div>
   );
 }

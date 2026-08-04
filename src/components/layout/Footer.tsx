@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useSettings } from '../SettingsContext';
+import { ProgressiveImage } from '../ui/progressive-image';
 
 export function Footer() {
   const { settings } = useSettings();
@@ -11,7 +12,7 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link to="/" className="inline-block mb-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm">
               {settings?.branding?.logoUrl ? (
-                <img src={settings.branding.logoUrl} alt={settings.general.companyName} className="h-8 object-contain" />
+                <ProgressiveImage src={settings.branding.logoUrl} alt={settings.general.companyName} frameClassName="inline-flex h-8 w-auto" className="h-8 w-auto object-contain" loading="eager" />
               ) : (
                 <span className="font-heading font-black text-2xl tracking-tighter text-primary">
                   {settings?.general?.companyName?.toUpperCase() || 'TERQIVO'}<span className="text-accent">.</span>

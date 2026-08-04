@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '@/src/components/ui/button';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 import { ArrowRight } from 'lucide-react';
 import heroImg from '@/src/assets/images/home-hero.png';
 
@@ -53,12 +54,12 @@ export function HeroSection() {
             className="relative lg:pl-8"
           >
             <div className="w-full aspect-[4/3] rounded-[24px] shadow-2xl border bg-muted/20 flex items-center justify-center overflow-hidden">
-              <img 
+              <ProgressiveImage
                 src={heroImg}
                 alt="Terqivo AI and software technology ecosystem illustration"
                 loading="eager"
                 fetchPriority="high"
-                decoding="async"
+                frameClassName="w-full h-full"
                 className="w-full h-full object-contain scale-[1.06]"
               />
             </div>

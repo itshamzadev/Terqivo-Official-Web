@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Button } from '@/src/components/ui/button';
 import { ArrowLeft, ArrowUpRight, Cpu, Code2, ShieldCheck, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 import companyFounder from '@/src/assets/images/company-founder.jpeg';
 
 export default function CeoFounder() {
@@ -29,9 +30,10 @@ export default function CeoFounder() {
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             <div className="lg:col-span-5 order-2 lg:order-1">
               <div className="w-full aspect-[4/5] rounded-[24px] overflow-hidden border border-border/50 shadow-sm bg-background">
-                <img 
-                  src={companyFounder} 
-                  alt="Muhammad Hamza, CEO and Founder of Terqivo" 
+                <ProgressiveImage
+                  src={companyFounder}
+                  alt="Muhammad Hamza, CEO and Founder of Terqivo"
+                  frameClassName="w-full h-full"
                   className="w-full h-full object-cover object-top"
                 />
               </div>

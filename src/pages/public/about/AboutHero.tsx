@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 import heroImg from '@/src/assets/images/company-hero.png';
 
 export function AboutHero() {
@@ -30,13 +31,13 @@ export function AboutHero() {
             className="relative"
           >
             <div className="w-full aspect-[4/3] rounded-[24px] shadow-2xl border flex items-center justify-center overflow-hidden">
-              <img 
+              <ProgressiveImage
                 src={heroImg}
                 alt="Terqivo engineering and technology illustration"
                 loading="eager"
                 fetchPriority="high"
-                decoding="async"
-                className="w-full h-full object-contain scale-[1.06]" 
+                frameClassName="w-full h-full"
+                className="w-full h-full object-contain scale-[1.06]"
               />
             </div>
           </motion.div>

@@ -5,6 +5,7 @@ import { Button } from '@/src/components/ui/button';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import type { Course } from '../Courses';
 import { assetUrl, formatPrice } from '@/src/lib/utils';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function FeaturedCourse({ course }: { course: Course | null }) {
   if (!course) {
@@ -40,7 +41,7 @@ export function FeaturedCourse({ course }: { course: Course | null }) {
         >
           <div className="w-full h-full min-h-[350px] lg:min-h-[450px] bg-muted/20 overflow-hidden relative">
             {(course.image || course.coverImage || course.thumbnail) ? (
-              <img src={assetUrl(course.image || course.coverImage || course.thumbnail)} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              <ProgressiveImage src={assetUrl(course.image || course.coverImage || course.thumbnail)} alt={course.title} frameClassName="w-full h-full" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
             ) : (
               <ImagePlaceholder title="Featured Course Cover" className="w-full h-full rounded-none border-0 group-hover:scale-105 transition-transform duration-700" />
             )}

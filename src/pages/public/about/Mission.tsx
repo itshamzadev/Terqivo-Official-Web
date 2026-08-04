@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import missionImg from '@/src/assets/images/company-mission.png';
 import { CheckCircle2 } from 'lucide-react';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function Mission() {
   const points = [
@@ -44,11 +45,11 @@ export function Mission() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-            <img 
+            <ProgressiveImage
               src={missionImg}
               alt="Terqivo mission illustration"
-              loading="lazy"
-              className="w-full aspect-square object-cover rounded-[24px] shadow-lg border bg-background" 
+              frameClassName="w-full aspect-square rounded-[24px] shadow-lg border bg-background"
+              className="w-full h-full object-cover"
             />
           </motion.div>
         </div>

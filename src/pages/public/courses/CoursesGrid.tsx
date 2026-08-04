@@ -5,6 +5,7 @@ import { Button } from '@/src/components/ui/button';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import type { Course } from '../Courses';
 import { assetUrl, formatPrice } from '@/src/lib/utils';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 function CourseSkeleton() {
   return (
@@ -88,7 +89,7 @@ export function CoursesGrid({ courses, isLoading, hasError }: CoursesGridProps) 
                 <div className="flex flex-col flex-1 bg-background rounded-2xl border hover:border-accent/40 hover:shadow-md transition-all overflow-hidden group">
                   <div className="w-full aspect-[16/10] bg-muted/20 border-b overflow-hidden relative">
                     {(course.image || course.coverImage || course.thumbnail) ? (
-                      <img src={assetUrl(course.image || course.coverImage || course.thumbnail)} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <ProgressiveImage src={assetUrl(course.image || course.coverImage || course.thumbnail)} alt={course.title} frameClassName="w-full h-full" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                     ) : (
                       <ImagePlaceholder title="Course Cover" className="w-full h-full border-0 rounded-none group-hover:scale-105 transition-transform duration-700" />
                     )}

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Package } from 'lucide-react';
+import { Download, Package } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 import { assetUrl } from '@/src/lib/utils';
 
 export function ProductSkeleton() {
@@ -55,7 +56,8 @@ interface Product {
   thumbnail?: string;
   image?: string;
   category?: string;
-  status: string;
+  status: 'published' | 'coming-soon';
+  downloadUrl?: string;
   featured?: boolean;
   platform?: string;
 }
@@ -74,7 +76,7 @@ export function DynamicProductsGrid() {
         throw new Error('Failed to fetch products');
       }
       const data = await res.json();
-      setProducts((data.data || []).filter((p: Product) => p.status === 'published'));
+      setProducts((data.data || []).filter((p: Product) => p.status === 'published' || p.status === 'coming-soon'));
     } catch (error) {
       console.error('Error fetching products:', error);
       setHasError(true);
@@ -93,7 +95,7 @@ export function DynamicProductsGrid() {
         <div className="mb-12">
           <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Explore Terqivo products</h2>
           <p className="text-lg text-muted-foreground">
-            Published products and software experiences from Terqivo will appear here.
+            Published products and upcoming software experiences from Terqivo will appear here.
           </p>
         </div>
 
@@ -117,7 +119,7 @@ export function DynamicProductsGrid() {
                 <div className="h-full bg-background rounded-2xl border flex flex-col hover:border-accent/40 hover:shadow-md transition-all group overflow-hidden">
                   <div className="w-full h-[220px] bg-muted/20 border-b overflow-hidden relative">
                     {(product.image || product.thumbnail) ? (
-                      <img src={assetUrl(product.image || product.thumbnail)} alt={product.name} className="w-full h-full object-cover" />
+                      <ProgressiveImage src={assetUrl(product.image || product.thumbnail)} alt={product.name} frameClassName="w-full h-full" className="w-full h-full object-cover" />
                     ) : (
                       <ImagePlaceholder title={`${product.name} Preview`} className="w-full h-full border-0 rounded-none" />
                     )}
@@ -147,12 +149,26 @@ export function DynamicProductsGrid() {
                       {product.summary}
                     </p>
                     
-                    <div className="mt-auto pt-4 border-t flex items-center">
-                      <Link 
-                        to={`/products/${product.slug}`}
-                        className="inline-flex items-center text-sm font-medium text-accent hover:text-accent/80 transition-colors group-hover:underline underline-offset-4"
-                      >
-                        Learn More <ArrowRight className="ml-1.5 h-4 w-4" />
+                    <div className="mt-auto pt-4 border-t flex items-center justify-between gap-3">
+                      {product.status === 'published' ? (
+                        product.downloadUrl ? (
+                          <Button size="sm" asChild>
+                            <a href={product.downloadUrl} target="_blank" rel="noopener noreferrer">
+                              <Download className="mr-1.5 h-4 w-4" /> Download
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button size="sm" disabled title="A download link has not been added yet">
+                            <Download className="mr-1.5 h-4 w-4" /> Download
+                          </Button>
+                        )
+                      ) : (
+                        <Button size="sm" variant="outline" disabled>
+                          Coming Soon
+                        </Button>
+                      )}
+                      <Link to={`/products/${product.slug}`} className="text-sm font-medium text-accent hover:text-accent/80 transition-colors group-hover:underline underline-offset-4">
+                        Details
                       </Link>
                     </div>
                   </div>

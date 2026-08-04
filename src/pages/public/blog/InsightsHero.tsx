@@ -3,16 +3,17 @@ import { motion } from 'motion/react';
 import { Button } from '@/src/components/ui/button';
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import heroImg from '@/src/assets/images/insights-hero.png';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function InsightsHeroVisual() {
   return (
     <div className="w-full aspect-[4/3] rounded-[24px] shadow-2xl border bg-muted/20 flex flex-col items-center justify-center overflow-hidden">
-      <img
+      <ProgressiveImage
         src={heroImg}
         alt="Terqivo engineering knowledge and insights illustration"
         loading="eager"
         fetchPriority="high"
-        decoding="async"
+        frameClassName="w-full h-full"
         className="w-full h-full object-contain object-center scale-[1.06]"
       />
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MessageCircle, RefreshCw, Save } from "lucide-react";
 import { toast } from "sonner";
+import { ProgressiveImage } from "@/src/components/ui/progressive-image";
 
 type WhatsAppSettings = {
   enabled: boolean;
@@ -99,7 +100,7 @@ export default function AdminWhatsAppSettings() {
         {status?.lastError && <p className="text-sm mt-2 text-red-700">{status.lastError}</p>}
       </div>
 
-      {status?.provider === "web" && status?.qrDataUrl && <div className="rounded-xl border bg-background p-6 text-center space-y-3"><h2 className="font-semibold">Scan this QR with WhatsApp</h2><img src={status.qrDataUrl} alt="WhatsApp login QR code" className="mx-auto w-[360px] max-w-full border rounded-lg" /><p className="text-xs text-muted-foreground">WhatsApp on your phone → Linked devices → Link a device.</p></div>}
+      {status?.provider === "web" && status?.qrDataUrl && <div className="rounded-xl border bg-background p-6 text-center space-y-3"><h2 className="font-semibold">Scan this QR with WhatsApp</h2><ProgressiveImage src={status.qrDataUrl} alt="WhatsApp login QR code" frameClassName="mx-auto w-[360px] max-w-full rounded-lg border" className="h-auto w-full" loading="eager" /><p className="text-xs text-muted-foreground">WhatsApp on your phone → Linked devices → Link a device.</p></div>}
 
       <div className="rounded-xl border bg-background p-6 space-y-5">
         <label className="flex items-center gap-3 font-medium"><input type="checkbox" checked={settings.enabled} onChange={(e) => setSettings((old) => ({ ...old, enabled: e.target.checked }))} /> Enable WhatsApp alerts</label>

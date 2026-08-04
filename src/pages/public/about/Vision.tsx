@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import visionImg from '@/src/assets/images/company-vision.png';
 import { CheckCircle2 } from 'lucide-react';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function Vision() {
   const points = [
@@ -21,11 +22,11 @@ export function Vision() {
             transition={{ duration: 0.6 }}
             className="order-2 lg:order-1 relative overflow-hidden rounded-[24px] shadow-lg border bg-muted/10"
           >
-            <img 
+            <ProgressiveImage
               src={visionImg}
               alt="Terqivo future technology vision illustration"
-              loading="lazy"
-              className="w-full aspect-square object-cover scale-[1.2] origin-center" 
+              frameClassName="w-full aspect-square"
+              className="w-full h-full object-cover scale-[1.2] origin-center"
             />
           </motion.div>
           

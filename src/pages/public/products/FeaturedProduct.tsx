@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 import manosImg from '@/src/assets/images/home-1.png';
 
 export function FeaturedProduct() {
@@ -62,10 +63,10 @@ export function FeaturedProduct() {
             className="relative"
           >
             <div className="w-full aspect-[4/3] rounded-[24px] shadow-2xl border bg-muted/20 flex items-center justify-center overflow-hidden">
-              <img 
+              <ProgressiveImage
                 src={manosImg}
                 alt="Manos AI desktop assistant interface"
-                loading="lazy"
+                frameClassName="w-full h-full"
                 className="w-full h-full object-contain scale-[1.06]"
               />
             </div>

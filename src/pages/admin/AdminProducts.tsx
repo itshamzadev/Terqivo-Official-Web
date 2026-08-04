@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/src/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/src/components/ui/dialog';
 import { toast } from 'sonner';
 import { removeUnusedUpload } from '@/src/lib/utils';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 interface Product {
   _id: string;
@@ -14,7 +15,7 @@ interface Product {
   slug: string;
   category: string;
   summary: string;
-  status: 'published' | 'draft' | 'archived';
+  status: 'published' | 'coming-soon' | 'draft' | 'archived';
   platform: string;
   featured: boolean;
   thumbnail?: string;
@@ -170,7 +171,7 @@ export default function AdminProducts() {
                 <label className="text-sm font-medium">Product Image</label>
                 <div className="flex items-center gap-4">
                   {thumbnailUrl && (
-                    <img src={thumbnailUrl} alt="Thumbnail preview" className="w-16 h-16 object-cover rounded-md border" />
+                    <ProgressiveImage src={thumbnailUrl} alt="Thumbnail preview" frameClassName="w-16 h-16 rounded-md border" className="w-full h-full object-cover" />
                   )}
                   <div className="flex-1">
                     <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
@@ -210,6 +211,11 @@ export default function AdminProducts() {
                   placeholder="Detailed description"
                 ></textarea>
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Download URL</label>
+                <Input {...register('downloadUrl')} type="url" placeholder="https://your-domain.com/downloads/product.zip" />
+                <p className="text-xs text-muted-foreground">This link powers the Download button for published products.</p>
+              </div>
               <div className="flex items-center space-x-2">
                 <input type="checkbox" id="featured" {...register('featured')} className="rounded border-gray-300" />
                 <label htmlFor="featured" className="text-sm font-medium">Feature on homepage</label>
@@ -219,6 +225,7 @@ export default function AdminProducts() {
                 <select {...register('status')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
+                  <option value="coming-soon">Coming Soon</option>
                   <option value="archived">Archived</option>
                 </select>
               </div>
@@ -253,7 +260,7 @@ export default function AdminProducts() {
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-2">
                           {product.thumbnail ? (
-                              <img src={product.thumbnail} alt="" className="w-8 h-8 rounded object-cover" />
+                              <ProgressiveImage src={product.thumbnail} alt="" frameClassName="w-8 h-8 rounded" className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-xs">No img</div>
                             )}

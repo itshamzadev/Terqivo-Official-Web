@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '@/src/components/ui/button';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
 import home1Img from '@/src/assets/images/home-1.png';
 
@@ -24,11 +25,12 @@ export function FeaturedProduct() {
               transition={{ duration: 0.5 }}
               className="order-2 lg:order-1"
             >
-              <img 
+              <ProgressiveImage
                 src={home1Img}
                 alt="Manos AI intelligent desktop assistant interface"
                 loading="eager"
-                className="w-full aspect-[4/3] object-contain rounded-[24px] shadow-xl border bg-background" 
+                frameClassName="w-full aspect-[4/3] rounded-[24px] shadow-xl border bg-background"
+                className="w-full h-full object-contain"
               />
             </motion.div>
             

@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/src/components/ui/button';
 import home2Img from '@/src/assets/images/home-2.png';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function VisionSection() {
   return (
@@ -15,11 +16,11 @@ export function VisionSection() {
              viewport={{ once: true, margin: "-100px" }}
              transition={{ duration: 0.5 }}
            >
-              <img 
+              <ProgressiveImage
                 src={home2Img}
                 alt="Terqivo connected technology ecosystem illustration"
-                loading="lazy"
-                className="w-full aspect-[4/3] object-contain rounded-[24px] shadow-lg border" 
+                frameClassName="w-full aspect-[4/3] rounded-[24px] shadow-lg border"
+                className="w-full h-full object-contain"
               />
            </motion.div>
            

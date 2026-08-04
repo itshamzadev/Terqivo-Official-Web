@@ -1,6 +1,5 @@
-import { useState } from "react";
 import type { ReactNode } from "react";
-import { assetUrl } from "@/src/lib/utils";
+import { ProgressiveImage } from "./progressive-image";
 
 interface ManagedImageProps {
   src?: string | null;
@@ -11,7 +10,5 @@ interface ManagedImageProps {
 }
 
 export function ManagedImage({ src, alt, className, fallback, loading = "lazy" }: ManagedImageProps) {
-  const [failed, setFailed] = useState(false);
-  if (!src || failed) return <>{fallback}</>;
-  return <img src={assetUrl(src)} alt={alt} className={className} loading={loading} onError={() => setFailed(true)} />;
+  return <ProgressiveImage src={src} alt={alt} className={className} frameClassName={className} fallback={fallback} loading={loading} />;
 }

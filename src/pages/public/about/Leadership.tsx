@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import founderImg from '@/src/assets/images/company-founder.jpeg';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function Leadership() {
   return (
@@ -31,11 +32,11 @@ export function Leadership() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-            <img 
+            <ProgressiveImage
               src={founderImg}
               alt="Founder and leadership portrait"
-              loading="lazy"
-              className="w-full aspect-[4/5] object-cover object-center rounded-[24px] shadow-md border bg-background" 
+              frameClassName="w-full aspect-[4/5] rounded-[24px] shadow-md border bg-background"
+              className="w-full h-full object-cover object-center"
             />
           </motion.div>
         </div>

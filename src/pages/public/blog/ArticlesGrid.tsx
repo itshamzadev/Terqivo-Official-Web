@@ -5,6 +5,7 @@ import { Button } from '@/src/components/ui/button';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
 import type { Article } from './FeaturedArticle';
 import { assetUrl } from '@/src/lib/utils';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export function ArticleSkeleton() {
   return (
@@ -81,7 +82,7 @@ export function ArticlesGrid({ articles, isLoading, hasError }: ArticlesGridProp
                   <div className="h-full bg-background rounded-2xl border flex flex-col hover:border-accent/40 hover:shadow-md transition-all overflow-hidden">
                     <div className="w-full aspect-[16/10] bg-muted/20 border-b overflow-hidden relative">
                       {article.coverImage ? (
-                        <img src={assetUrl(article.coverImage, 'insights')} alt={article.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <ProgressiveImage src={assetUrl(article.coverImage, 'insights')} alt={article.title} frameClassName="w-full h-full" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                       ) : (
                         <ImagePlaceholder title="Article Cover" className="w-full h-full border-0 rounded-none group-hover:scale-105 transition-transform duration-700" />
                       )}

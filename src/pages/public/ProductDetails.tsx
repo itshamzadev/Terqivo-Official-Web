@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/src/components/ui/button';
 import { ArrowLeft, Globe, Code2, Download, CheckCircle2 } from 'lucide-react';
 import { ImagePlaceholder } from '@/src/components/ui/image-placeholder';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 import Markdown from 'react-markdown';
 import { assetUrl } from '@/src/lib/utils';
 
@@ -84,11 +85,17 @@ export default function ProductDetails() {
                     </a>
                   </Button>
                 )}
-                {product.downloadUrl && (
+                {product.status === 'coming-soon' ? (
+                  <Button size="lg" variant="outline" disabled>Coming Soon</Button>
+                ) : product.downloadUrl ? (
                   <Button size="lg" variant="secondary" asChild>
                     <a href={product.downloadUrl} target="_blank" rel="noopener noreferrer">
                       <Download className="mr-2 h-4 w-4" /> Download
                     </a>
+                  </Button>
+                ) : (
+                  <Button size="lg" variant="secondary" disabled>
+                    <Download className="mr-2 h-4 w-4" /> Download
                   </Button>
                 )}
               </div>
@@ -97,7 +104,7 @@ export default function ProductDetails() {
             <div className="flex-1 w-full">
               {product.image || product.thumbnail ? (
                 <div className="w-full aspect-[4/3] rounded-[24px] overflow-hidden border bg-muted/20">
-                  <img src={assetUrl(product.image || product.thumbnail)} alt={product.name} className="w-full h-full object-cover" />
+                  <ProgressiveImage src={assetUrl(product.image || product.thumbnail)} alt={product.name} frameClassName="w-full h-full" className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <ImagePlaceholder title="Product Interface" className="w-full aspect-[4/3] rounded-[24px]" />

@@ -5,6 +5,7 @@ import { Button } from '@/src/components/ui/button';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSettings } from '../SettingsContext';
 import { useAuth } from '../auth/AuthContext';
+import { ProgressiveImage } from '../ui/progressive-image';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -78,7 +79,7 @@ export function Header() {
             {/* Logo */}
             <Link to="/" className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm" aria-label="Terqivo Home">
               {settings?.branding?.logoUrl ? (
-                <img src={settings.branding.logoUrl} alt={settings.general.companyName} className="h-8 object-contain" />
+                <ProgressiveImage src={settings.branding.logoUrl} alt={settings.general.companyName} frameClassName="inline-flex h-8 w-auto" className="h-8 w-auto object-contain" loading="eager" />
               ) : (
                 <span className="font-heading font-black text-2xl tracking-tighter text-primary">
                   {settings?.general?.companyName?.toUpperCase() || 'TERQIVO'}<span className="text-accent">.</span>

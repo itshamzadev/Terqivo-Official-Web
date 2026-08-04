@@ -11,7 +11,7 @@ const productSchema = new mongoose.Schema({
   features: [{ type: String }],
   platform: { type: String },
   version: { type: String },
-  status: { type: String, enum: ['published', 'draft', 'archived'], default: 'draft' },
+  status: { type: String, enum: ['published', 'coming-soon', 'draft', 'archived'], default: 'draft' },
   downloadUrl: { type: String },
   liveUrl: { type: String },
   githubUrl: { type: String },

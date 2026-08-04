@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/src/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/src/components/ui/dialog";
 import { toast } from "sonner";
 import { assetUrl } from "@/src/lib/utils";
+import { ProgressiveImage } from "@/src/components/ui/progressive-image";
 
 interface Service {
   _id: string;
@@ -107,17 +108,18 @@ export default function AdminServices() {
     setImageError("");
   };
 
-  const handleImageUrlChange = (value: string) => {
-    setImageValue(value);
+  const handleImageUrlChange = (value: string | React.ChangeEvent<HTMLInputElement>) => {
+    const nextValue = typeof value === "string" ? value : value.target.value;
+    setImageValue(nextValue);
     setSelectedImage(null);
-    setImagePreview(value ? assetUrl(value, "services") : "");
-    setRemoveImage(!value);
-    if (!value || value.startsWith("/uploads/") || value.startsWith("uploads/")) {
+    setImagePreview(nextValue ? assetUrl(nextValue, "services") : "");
+    setRemoveImage(!nextValue);
+    if (!nextValue || nextValue.startsWith("/uploads/") || nextValue.startsWith("uploads/")) {
       setImageError("");
       return;
     }
     try {
-      const parsed = new URL(value);
+      const parsed = new URL(nextValue);
       setImageError(parsed.protocol === "http:" || parsed.protocol === "https:" ? "" : "Use an HTTP(S) image URL.");
     } catch {
       setImageError("Use a valid HTTP(S) image URL or an uploaded image.");
@@ -172,7 +174,7 @@ export default function AdminServices() {
         <Dialog open={isOpen} onOpenChange={setIsOpen}><DialogTrigger asChild><Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> Add Service</Button></DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editingId ? "Edit Service" : "Add New Service"}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2"><label className="text-sm font-medium">Service Image</label><div className="flex flex-wrap items-center gap-4">{imagePreview ? <div className="relative"><img src={imagePreview} alt="Service preview" className="h-24 w-36 rounded-md border object-cover" /><button type="button" onClick={removeCurrentImage} className="absolute -right-2 -top-2 rounded-full bg-background border p-1" aria-label="Remove service image"><X className="h-3 w-3" /></button></div> : <div className="h-24 w-36 rounded-md border bg-muted/30 flex items-center justify-center text-xs text-muted-foreground">No image</div>}<label className="flex items-center gap-2 cursor-pointer rounded-md border px-3 py-2 text-sm"><Upload className="h-4 w-4" /> Choose image<input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" onChange={handleImageChange} className="hidden" disabled={isSaving} /></label>{(imageValue || imagePreview) && <Button type="button" variant="outline" size="sm" onClick={removeCurrentImage} disabled={isSaving}>Remove image</Button>}</div><Input value={imageValue} onChange={(event) => handleImageUrlChange(event.target.value)} placeholder="Or paste an external image URL" disabled={isSaving} />{imageError && <p className="text-sm text-destructive">{imageError}</p>}<p className="text-xs text-muted-foreground">JPG, PNG, or WEBP up to 5MB.</p></div>
+              <div className="space-y-2"><label className="text-sm font-medium">Service Image</label><div className="flex flex-wrap items-center gap-4">{imagePreview ? <div className="relative"><ProgressiveImage src={imagePreview} alt="Service preview" frameClassName="h-24 w-36 rounded-md border" className="h-full w-full object-cover" /><button type="button" onClick={removeCurrentImage} className="absolute -right-2 -top-2 rounded-full bg-background border p-1" aria-label="Remove service image"><X className="h-3 w-3" /></button></div> : <div className="h-24 w-36 rounded-md border bg-muted/30 flex items-center justify-center text-xs text-muted-foreground">No image</div>}<label className="flex items-center gap-2 cursor-pointer rounded-md border px-3 py-2 text-sm"><Upload className="h-4 w-4" /> Choose image<input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" onChange={handleImageChange} className="hidden" disabled={isSaving} /></label>{(imageValue || imagePreview) && <Button type="button" variant="outline" size="sm" onClick={removeCurrentImage} disabled={isSaving}>Remove image</Button>}</div><Input value={imageValue} onChange={(event) => handleImageUrlChange(event)} placeholder="Or paste an external image URL" disabled={isSaving} />{imageError && <p className="text-sm text-destructive">{imageError}</p>}<p className="text-xs text-muted-foreground">JPG, PNG, or WEBP up to 5MB.</p></div>
               <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><label className="text-sm font-medium">Service Title</label><Input {...register("title", { required: true })} placeholder="e.g. Cloud Infrastructure" /></div><div className="space-y-2"><label className="text-sm font-medium">Slug</label><Input {...register("slug")} placeholder="Generated if empty" /></div></div>
               <div className="grid grid-cols-3 gap-4"><div className="space-y-2"><label className="text-sm font-medium">Category</label><Input {...register("category")} /></div><div className="space-y-2"><label className="text-sm font-medium">Icon (optional)</label><Input {...register("icon")} /></div><div className="space-y-2"><label className="text-sm font-medium">Sort order</label><Input type="number" {...register("sortOrder")} /></div></div>
               <div className="space-y-2"><label className="text-sm font-medium">Short Description</label><Input {...register("shortDescription", { required: true })} placeholder="Brief summary of the service" /></div>
@@ -183,7 +185,7 @@ export default function AdminServices() {
           </DialogContent>
         </Dialog>
       </div>
-      <Card><CardContent className="p-0"><div className="rounded-md border overflow-x-auto"><table className="w-full text-sm text-left"><thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b"><tr><th className="px-6 py-4">Service</th><th className="px-6 py-4">Status</th><th className="px-6 py-4 text-right">Actions</th></tr></thead><tbody>{isLoading ? <tr><td colSpan={3} className="px-6 py-8 text-center">Loading services...</td></tr> : services.length === 0 ? <tr><td colSpan={3} className="px-6 py-8 text-center">No services found.</td></tr> : services.map((service) => <tr key={service._id} className="border-b last:border-0 hover:bg-muted/30"><td className="px-6 py-4"><div className="flex items-center gap-3">{service.image && <img src={assetUrl(service.image)} alt="" className="h-10 w-14 rounded object-cover" />}<div><p className="font-medium">{service.title}</p><p className="text-xs text-muted-foreground mt-1 truncate max-w-xs">{service.shortDescription}</p></div>{service.featured && <span className="bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">Featured</span>}</div></td><td className="px-6 py-4"><span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">{service.status}</span></td><td className="px-6 py-4 text-right whitespace-nowrap"><Button variant="ghost" size="icon" onClick={() => window.open(`/services/${service.slug}`, "_blank")}><Eye className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => openEdit(service)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => handleDelete(service._id)}><Trash2 className="h-4 w-4" /></Button></td></tr>)}</tbody></table></div></CardContent></Card>
+      <Card><CardContent className="p-0"><div className="rounded-md border overflow-x-auto"><table className="w-full text-sm text-left"><thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b"><tr><th className="px-6 py-4">Service</th><th className="px-6 py-4">Status</th><th className="px-6 py-4 text-right">Actions</th></tr></thead><tbody>{isLoading ? <tr><td colSpan={3} className="px-6 py-8 text-center">Loading services...</td></tr> : services.length === 0 ? <tr><td colSpan={3} className="px-6 py-8 text-center">No services found.</td></tr> : services.map((service) => <tr key={service._id} className="border-b last:border-0 hover:bg-muted/30"><td className="px-6 py-4"><div className="flex items-center gap-3">{service.image && <ProgressiveImage src={assetUrl(service.image)} alt="" frameClassName="h-10 w-14 rounded" className="h-full w-full object-cover" />}<div><p className="font-medium">{service.title}</p><p className="text-xs text-muted-foreground mt-1 truncate max-w-xs">{service.shortDescription}</p></div>{service.featured && <span className="bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">Featured</span>}</div></td><td className="px-6 py-4"><span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">{service.status}</span></td><td className="px-6 py-4 text-right whitespace-nowrap"><Button variant="ghost" size="icon" onClick={() => window.open(`/services/${service.slug}`, "_blank")}><Eye className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => openEdit(service)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => handleDelete(service._id)}><Trash2 className="h-4 w-4" /></Button></td></tr>)}</tbody></table></div></CardContent></Card>
     </div>
   );
 }

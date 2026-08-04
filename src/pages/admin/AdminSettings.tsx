@@ -13,6 +13,7 @@ import {
   Upload
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('general');
@@ -417,7 +418,7 @@ export default function AdminSettings() {
                     <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/30">
                       {branding.logoUrl ? (
                         <div className="mb-4 relative w-full flex justify-center bg-gray-200 dark:bg-gray-800 p-4 rounded-lg">
-                          <img src={branding.logoUrl} alt="Logo Preview" className="h-12 object-contain" />
+                          <ProgressiveImage src={branding.logoUrl} alt="Logo Preview" frameClassName="h-12 w-full" className="h-full w-full object-contain" />
                         </div>
                       ) : (
                         <ImageIcon className="w-12 h-12 text-gray-400 mb-3" />
@@ -448,7 +449,7 @@ export default function AdminSettings() {
                     <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/30">
                       {branding.faviconUrl ? (
                         <div className="mb-4 w-12 h-12 bg-white rounded-lg shadow flex items-center justify-center overflow-hidden p-1">
-                          <img src={branding.faviconUrl} alt="Favicon Preview" className="w-full h-full object-contain" />
+                          <ProgressiveImage src={branding.faviconUrl} alt="Favicon Preview" frameClassName="w-full h-full" className="w-full h-full object-contain" />
                         </div>
                       ) : (
                         <Globe className="w-12 h-12 text-gray-400 mb-3" />
@@ -511,7 +512,7 @@ export default function AdminSettings() {
                     <div className="flex flex-col sm:flex-row gap-4 items-start">
                       {seo.ogImageUrl && (
                         <div className="w-full sm:w-48 aspect-[1.9/1] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0">
-                          <img src={seo.ogImageUrl} alt="OG Preview" className="w-full h-full object-cover" />
+                          <ProgressiveImage src={seo.ogImageUrl} alt="OG Preview" frameClassName="w-full h-full" className="w-full h-full object-cover" />
                         </div>
                       )}
                       <div className="flex flex-col w-full gap-2">
