@@ -67,14 +67,13 @@ export default function Courses() {
   }, []);
 
   const featuredCourse = courses.find((c) => c.featured) || null;
-  const regularCourses = courses.filter((c) => c._id !== featuredCourse?._id);
 
   return (
     <div className="flex flex-col w-full">
       <CoursesHero />
       <LearningDirection />
       <FeaturedCourse course={featuredCourse} />
-      <CoursesGrid courses={regularCourses} isLoading={isLoading} hasError={hasError} />
+      <CoursesGrid courses={courses} isLoading={isLoading} hasError={hasError} />
       <LearningCategories />
       <CourseDesign />
       <LearningJourney />
