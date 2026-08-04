@@ -2,14 +2,14 @@ import mongoose from "mongoose";
 import { Router } from "express";
 import { Product } from "../models/Product";
 import { authenticate } from "../middleware/auth";
-import { isLocalUpload, normalizeImagePath, removeLocalUpload } from "../utils/uploads";
+import { isLocalUpload, isPersistentUpload, normalizeImagePath, removeStoredUpload } from "../utils/uploads";
 
 const router = Router();
 const productImage = (item: any) => normalizeImagePath(item?.image || item?.thumbnail, "products");
 const publicProduct = (item: any) => ({ ...item, image: productImage(item), thumbnail: productImage(item) });
 
 async function imageIsReferenced(image: string, excludeId: string) {
-  if (!isLocalUpload(image, "products")) return true;
+  if (!isLocalUpload(image, "products") && !isPersistentUpload(image)) return true;
   const normalized = normalizeImagePath(image, "products");
   return Boolean(await Product.exists({ _id: { $ne: excludeId }, $or: [{ image: { $in: [image, normalized] } }, { thumbnail: { $in: [image, normalized] } }] }));
 }
@@ -55,7 +55,7 @@ router.put("/:id", authenticate, async (req, res) => {
     }
     const item = await Product.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
     if (!item) return res.status(404).json({ success: false, message: "Product not found" });
-    if ((body.image !== undefined && normalizeImagePath(oldImage, "products") !== normalizeImagePath(item.image, "products")) && !await imageIsReferenced(oldImage, req.params.id)) removeLocalUpload(oldImage, "products");
+    if ((body.image !== undefined && normalizeImagePath(oldImage, "products") !== normalizeImagePath(item.image, "products")) && !await imageIsReferenced(oldImage, req.params.id)) void removeStoredUpload(oldImage, "products");
     res.json({ success: true, message: "Product updated", data: publicProduct(item) });
   } catch (error: any) {
     res.status(error?.code === 11000 ? 409 : 400).json({ success: false, message: error?.code === 11000 ? "Slug already exists" : error?.message || "Invalid product data" });
@@ -68,7 +68,7 @@ router.delete("/:id", authenticate, async (req, res) => {
   if (!item) return res.status(404).json({ success: false, message: "Product not found" });
   if (item.image || item.thumbnail) {
     try {
-      if (!await imageIsReferenced(item.image || item.thumbnail || "", req.params.id)) removeLocalUpload(item.image || item.thumbnail, "products");
+      if (!await imageIsReferenced(item.image || item.thumbnail || "", req.params.id)) void removeStoredUpload(item.image || item.thumbnail, "products");
     } catch (error) {
       console.warn("Product deleted but image cleanup failed:", error);
     }

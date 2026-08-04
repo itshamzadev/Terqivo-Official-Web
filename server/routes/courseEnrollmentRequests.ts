@@ -5,7 +5,7 @@ import { Currency } from "../models/Currency";
 import { PaymentAccount } from "../models/PaymentAccount";
 import { CourseEnrollmentRequest } from "../models/CourseEnrollmentRequest";
 import { authenticate, optionalUser, type AuthRequest } from "../middleware/auth";
-import { createPrivateUpload, parsePrivateUploadReference, privateUploadPath, localUploadFilePath, removePrivateUpload, removeLocalUpload, uploadUrl, validateUploadedImage } from "../utils/uploads";
+import { createPrivateUpload, parsePrivateUploadReference, privateUploadPath, localUploadFilePath, persistUploadedFile, removePrivateUpload, removeStoredUpload, sendStoredUpload, validateUploadedImage } from "../utils/uploads";
 import { sendTemplateEmail } from "../utils/emailService";
 import { User } from "../models/User";
 import { SiteSettings } from "../models/SiteSettings";
@@ -21,7 +21,11 @@ router.post("/", optionalUser, (req, res, next) => {
     next();
   });
 }, async (req: AuthRequest, res) => {
-  const cleanup = () => { if (req.file) removePrivateUpload(`private/course-payment-screenshots/${req.file.filename}`); };
+  let screenshotReference = "";
+  const cleanup = () => {
+    if (screenshotReference.startsWith("private/gridfs/")) void removeStoredUpload(screenshotReference);
+    else if (req.file) removePrivateUpload(`private/course-payment-screenshots/${req.file.filename}`);
+  };
   const fail = (status: number, message: string) => { cleanup(); return res.status(status).json({ success: false, message }); };
   try {
     const courseId = req.body.courseId || req.body.selectedCourse;
@@ -39,6 +43,7 @@ router.post("/", optionalUser, (req, res, next) => {
       removePrivateUpload(`private/course-payment-screenshots/${req.file.filename}`);
       return fail(400, "The payment screenshot is not a valid JPG, PNG, or WEBP image.");
     }
+    screenshotReference = (await persistUploadedFile(req.file, "course-payment-screenshots", "private")).reference;
     if (!authoritativeName || !/^\S+@\S+\.\S+$/.test(authoritativeEmail) || !phone?.trim()) return fail(400, "Name, email, and phone are required");
 
     const [course, account] = await Promise.all([Course.findOne({ _id: courseId, $or: [{ published: true }, { published: { $exists: false }, status: { $in: ["active", "published"] } }] }), PaymentAccount.findOne({ _id: paymentAccountId, isActive: true })]);
@@ -59,12 +64,12 @@ router.post("/", optionalUser, (req, res, next) => {
       paymentAccountId, paymentMethodSnapshot: account.paymentMethod, paymentAccountSnapshot: `${account.accountTitle}${paymentValues ? `: ${paymentValues}` : ""}`,
       amountSnapshot: course.salePrice ?? course.price ?? 0,
       currencySnapshot: currency ? { name: currency.name, code: currency.code, symbol: currency.symbol, prefix: currency.prefix, suffix: currency.suffix } : {},
-      transactionId: String(transactionId || "N/A").trim(), paymentScreenshot: `private/course-payment-screenshots/${req.file.filename}`, message: String(message || "").trim(), status: "pending",
+      transactionId: String(transactionId || "N/A").trim(), paymentScreenshot: screenshotReference, message: String(message || "").trim(), status: "pending",
     });
     void notifyCourseRequest(item).catch((error) => console.warn("Course enrollment email notification failed:", error?.message || "unknown error"));
     res.status(201).json({ success: true, message: "Enrollment request submitted", data: { requestNumber: item.requestNumber } });
   } catch (error: any) {
-    if (req.file) removePrivateUpload(`private/course-payment-screenshots/${req.file.filename}`);
+    cleanup();
     res.status(400).json({ success: false, message: error?.message || "Could not submit enrollment request" });
   }
 });
@@ -110,6 +115,7 @@ router.get("/:id/payment-screenshot", authenticate, async (req, res) => {
   if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid request id" });
   const item: any = await CourseEnrollmentRequest.findById(req.params.id).lean();
   if (!item?.paymentScreenshot) return res.status(404).json({ success: false, message: "Payment screenshot not found" });
+  if (await sendStoredUpload(item.paymentScreenshot, res)) return;
   const parsed = parsePrivateUploadReference(item.paymentScreenshot);
   const file = parsed ? privateUploadPath(parsed.folder, parsed.filename) : localUploadFilePath(item.paymentScreenshot, "payment-screenshots");
   if (!file) return res.status(404).json({ success: false, message: "Payment screenshot not found" });

@@ -5,9 +5,12 @@ import { authenticate } from "../middleware/auth";
 import {
   createImageUpload,
   isLocalUpload,
+  isPersistentUpload,
   isValidImageReference,
   normalizeImagePath,
+  persistUploadedFile,
   removeLocalUpload,
+  removeStoredUpload,
   uploadUrl,
   validateUploadedImage,
 } from "../utils/uploads";
@@ -52,7 +55,7 @@ function normalizeService(service: any) {
 }
 
 async function serviceImageIsReferenced(image: string, excludeId: string) {
-  if (!isLocalUpload(image, "services")) return true;
+  if (!isLocalUpload(image, "services") && !isPersistentUpload(image)) return true;
   const normalized = normalizeImagePath(image, "services");
   return Boolean(await Service.exists({ _id: { $ne: excludeId }, $or: [{ image: { $in: [image, normalized] } }, { imageUrl: { $in: [image, normalized] } }] }));
 }
@@ -125,7 +128,8 @@ router.post("/", authenticate, handleServiceUpload, async (req, res) => {
     body.status = body.published ? "published" : "draft";
     body.sortOrder = Number(body.sortOrder) || 0;
     if (req.file) {
-      newImage = uploadUrl("services", req.file.filename);
+      const stored = await persistUploadedFile(req.file, "services", "public");
+      newImage = stored.url;
       body.image = newImage;
     } else if (body.removeImage === "true") {
       body.image = "";
@@ -138,7 +142,7 @@ router.post("/", authenticate, handleServiceUpload, async (req, res) => {
     const item = await Service.create(body);
     res.status(201).json({ success: true, message: "Service created", data: normalizeService(item) });
   } catch (error: any) {
-    if (newImage) removeLocalUpload(newImage, "services");
+    if (newImage) await removeStoredUpload(newImage, "services");
     res.status(error?.code === 11000 ? 409 : 400).json({ success: false, message: error?.code === 11000 ? "Slug already exists" : error?.message || "Invalid service data" });
   }
 });
@@ -161,7 +165,8 @@ async function updateService(req: Request, res: Response) {
     if (body.sortOrder !== undefined) body.sortOrder = Number(body.sortOrder) || 0;
     const oldImage = current.image || current.imageUrl || "";
     if (req.file) {
-      newImage = uploadUrl("services", req.file.filename);
+      const stored = await persistUploadedFile(req.file, "services", "public");
+      newImage = stored.url;
       body.image = newImage;
     } else if (body.removeImage === "true") {
       body.image = "";
@@ -174,15 +179,15 @@ async function updateService(req: Request, res: Response) {
     delete body.removeImage;
     const item = await Service.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
     if (!item) {
-      if (newImage) removeLocalUpload(newImage, "services");
+      if (newImage) await removeStoredUpload(newImage, "services");
       return res.status(404).json({ success: false, message: "Service not found" });
     }
     if (newImage || body.image === "") {
-      if (oldImage && normalizeImagePath(oldImage, "services") !== normalizeImagePath(item.image, "services") && !await serviceImageIsReferenced(oldImage, req.params.id)) removeLocalUpload(oldImage, "services");
+      if (oldImage && normalizeImagePath(oldImage, "services") !== normalizeImagePath(item.image, "services") && !await serviceImageIsReferenced(oldImage, req.params.id)) void removeStoredUpload(oldImage, "services");
     }
     res.json({ success: true, message: "Service updated", data: normalizeService(item) });
   } catch (error: any) {
-    if (newImage) removeLocalUpload(newImage, "services");
+    if (newImage) await removeStoredUpload(newImage, "services");
     res.status(error?.code === 11000 ? 409 : 400).json({ success: false, message: error?.code === 11000 ? "Slug already exists" : error?.message || "Invalid service data" });
   }
 }
@@ -204,7 +209,7 @@ router.delete("/:id", authenticate, async (req, res) => {
   if (!item) return res.status(404).json({ success: false, message: "Service not found" });
   try {
     const image = item.image || item.imageUrl || "";
-    if (image && !await serviceImageIsReferenced(image, req.params.id)) removeLocalUpload(image, "services");
+    if (image && !await serviceImageIsReferenced(image, req.params.id)) void removeStoredUpload(image, "services");
   } catch (error) {
     console.warn("Service deleted but image cleanup failed:", error);
   }

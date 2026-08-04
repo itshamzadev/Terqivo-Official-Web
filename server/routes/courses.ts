@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { Course } from "../models/Course";
 import { Currency } from "../models/Currency";
 import { authenticate } from "../middleware/auth";
-import { isLocalUpload, normalizeImagePath, removeLocalUpload } from "../utils/uploads";
+import { isLocalUpload, isPersistentUpload, normalizeImagePath, removeStoredUpload } from "../utils/uploads";
 
 const router = Router();
 const objectId = (value: string) => mongoose.isValidObjectId(value);
@@ -18,7 +18,7 @@ async function uniqueSlug(value: string, excludeId?: string) {
 }
 
 async function imageIsReferenced(image: string, excludeId: string) {
-  if (!isLocalUpload(image, "courses")) return true;
+  if (!isLocalUpload(image, "courses") && !isPersistentUpload(image)) return true;
   const normalized = normalizeImagePath(image, "courses");
   return Boolean(await Course.exists({ _id: { $ne: excludeId }, $or: [{ image: { $in: [image, normalized] } }, { coverImage: { $in: [image, normalized] } }, { thumbnail: { $in: [image, normalized] } }] }));
 }
@@ -121,7 +121,7 @@ router.put("/:id", authenticate, async (req, res) => {
     if (body.published !== undefined) body.status = body.published ? "published" : "draft";
     const item = await Course.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
     if (!item) return res.status(404).json({ success: false, message: "Course not found" });
-    if (body.image !== undefined && normalizeImagePath(oldImage, "courses") !== normalizeImagePath(item.image, "courses") && !await imageIsReferenced(oldImage, req.params.id)) removeLocalUpload(oldImage, "courses");
+    if (body.image !== undefined && normalizeImagePath(oldImage, "courses") !== normalizeImagePath(item.image, "courses") && !await imageIsReferenced(oldImage, req.params.id)) void removeStoredUpload(oldImage, "courses");
     res.json({ success: true, message: "Course updated", data: await withCurrency(item) });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error?.code === 11000 ? "Slug already exists" : error?.message || "Invalid course data" });
@@ -134,7 +134,7 @@ router.delete("/:id", authenticate, async (req, res) => {
   if (!item) return res.status(404).json({ success: false, message: "Course not found" });
   const image = item.image || item.coverImage || item.thumbnail || "";
   try {
-    if (image && !await imageIsReferenced(image, req.params.id)) removeLocalUpload(image, "courses");
+    if (image && !await imageIsReferenced(image, req.params.id)) void removeStoredUpload(image, "courses");
   } catch (error) {
     console.warn("Course deleted but image cleanup failed:", error);
   }

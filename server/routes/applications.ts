@@ -1,13 +1,12 @@
 import { Router } from "express";
 import mongoose from "mongoose";
 import crypto from "crypto";
-import path from "path";
 import { JobApplication } from "../models/JobApplication";
 import { Job } from "../models/Job";
 import { Currency } from "../models/Currency";
 import { PaymentAccount } from "../models/PaymentAccount";
 import { authenticate } from "../middleware/auth";
-import { createPrivateApplicationUpload, parsePrivateUploadReference, privateUploadPath, removePrivateUpload, validateUploadedImage } from "../utils/uploads";
+import { createPrivateApplicationUpload, parsePrivateUploadReference, persistUploadedFile, privateUploadPath, removePrivateUpload, removeStoredUpload, sendStoredUpload, validateUploadedImage } from "../utils/uploads";
 import { sendTemplateEmail } from "../utils/emailService";
 import { createRateLimiter } from "../middleware/rateLimit";
 import { optionalUser, type AuthRequest } from "../middleware/auth";
@@ -57,7 +56,14 @@ router.post("/", createRateLimiter(5, 15 * 60 * 1000), optionalUser, (req, res, 
   const files = (req.files || {}) as Record<string, Express.Multer.File[]>;
   const resume = files.resume?.[0];
   const screenshot = files.paymentScreenshot?.[0];
-  const cleanupUploadedFiles = () => { if (resume) removePrivateUpload(`private/job-resumes/${resume.filename}`); if (screenshot) removePrivateUpload(`private/job-payment-screenshots/${screenshot.filename}`); };
+  let resumeReference = "";
+  let screenshotReference = "";
+  const cleanupUploadedFiles = () => {
+    if (resumeReference.startsWith("private/gridfs/")) void removeStoredUpload(resumeReference);
+    else if (resume) removePrivateUpload(resumeReference || `private/job-resumes/${resume.filename}`);
+    if (screenshotReference.startsWith("private/gridfs/")) void removeStoredUpload(screenshotReference);
+    else if (screenshot) removePrivateUpload(screenshotReference || `private/job-payment-screenshots/${screenshot.filename}`);
+  };
   const fail = (status: number, message: string, code?: string) => { cleanupUploadedFiles(); return res.status(status).json({ success: false, ...(code ? { code } : {}), message }); };
   try {
     const jobId = field(req.body.jobId);
@@ -95,15 +101,19 @@ router.post("/", createRateLimiter(5, 15 * 60 * 1000), optionalUser, (req, res, 
       if (screenshot && !await validateUploadedImage(screenshot)) return fail(400, "Payment screenshot is not a valid image");
     }
 
+    if (resume) resumeReference = (await persistUploadedFile(resume, "job-resumes", "private")).reference;
+    if (paymentSelected && screenshot) screenshotReference = (await persistUploadedFile(screenshot, "job-payment-screenshots", "private")).reference;
+    else if (screenshot) removePrivateUpload(`private/job-payment-screenshots/${screenshot.filename}`);
+
     const values = [account?.bankName, account?.accountNumber, account?.iban, account?.walletNumber].filter(Boolean).join(" | ");
     const paymentStatus = paymentSelected ? "submitted" : job.applicationFeeEnabled ? "unpaid" : "not-required";
     const item = await JobApplication.create({
       applicationNumber: makeApplicationNumber(), jobId, userId: accountUser?._id, jobTitleSnapshot: job.title, applicantName, applicantUsernameSnapshot: accountUser?.username || "", name: applicantName, email, phone,
       currentCity: field(req.body.currentCity), country: field(req.body.country), coverLetter: field(req.body.coverLetter), applicantMessage: field(req.body.applicantMessage),
       portfolioUrl: field(req.body.portfolioUrl), linkedInUrl: field(req.body.linkedInUrl), githubUrl: field(req.body.githubUrl), cvUrl: field(req.body.cvUrl),
-      resumePath: resume ? `private/job-resumes/${path.basename(resume.filename)}` : "", paymentRequiredSnapshot: Boolean(job.applicationFeeEnabled && job.applicationFeeRequired), paymentAmountSnapshot: paymentSelected ? Number(job.applicationFeeAmount || 0) : 0,
+      resumePath: resumeReference, paymentRequiredSnapshot: Boolean(job.applicationFeeEnabled && job.applicationFeeRequired), paymentAmountSnapshot: paymentSelected ? Number(job.applicationFeeAmount || 0) : 0,
       currencySnapshot: currency ? { name: currency.name, code: currency.code, symbol: currency.symbol, prefix: currency.prefix, suffix: currency.suffix } : {}, paymentAccountId: account?._id,
-      paymentAccountSnapshot: account ? `${account.accountTitle}${values ? `: ${values}` : ""}` : "", transactionId: paymentSelected ? field(req.body.transactionId) : "", paymentScreenshotPath: screenshot ? `private/job-payment-screenshots/${path.basename(screenshot.filename)}` : "", paymentStatus,
+      paymentAccountSnapshot: account ? `${account.accountTitle}${values ? `: ${values}` : ""}` : "", transactionId: paymentSelected ? field(req.body.transactionId) : "", paymentScreenshotPath: screenshotReference, paymentStatus,
       status: "pending", applicationStatus: "submitted",
     });
     void sendApplicationEmails(item).catch((error) => console.warn("Job application email notification failed:", error?.message || "unknown error"));
@@ -129,6 +139,7 @@ router.get("/:id/resume", authenticate, async (req: any, res) => {
   if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid application id" });
   const item: any = await JobApplication.findById(req.params.id).lean();
   if (!item?.resumePath) return res.status(404).json({ success: false, message: "Resume not found" });
+  if (await sendStoredUpload(item.resumePath, res)) return;
   const parsed = parsePrivateUploadReference(item.resumePath); const file = parsed ? privateUploadPath(parsed.folder, parsed.filename) : null;
   if (!file) return res.status(404).json({ success: false, message: "Resume not found" });
   res.sendFile(file);
@@ -136,7 +147,9 @@ router.get("/:id/resume", authenticate, async (req: any, res) => {
 
 router.get("/:id/payment-screenshot", authenticate, async (req: any, res) => {
   if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid application id" });
-  const item: any = await JobApplication.findById(req.params.id).lean(); const parsed = parsePrivateUploadReference(item?.paymentScreenshotPath); const file = parsed ? privateUploadPath(parsed.folder, parsed.filename) : null;
+  const item: any = await JobApplication.findById(req.params.id).lean();
+  if (await sendStoredUpload(item?.paymentScreenshotPath, res)) return;
+  const parsed = parsePrivateUploadReference(item?.paymentScreenshotPath); const file = parsed ? privateUploadPath(parsed.folder, parsed.filename) : null;
   if (!file) return res.status(404).json({ success: false, message: "Payment screenshot not found" });
   res.sendFile(file);
 });
@@ -191,7 +204,7 @@ router.post("/:id/custom-reply", authenticate, async (req: any, res) => {
 router.delete("/:id", authenticate, async (req, res) => {
   if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid application id" });
   const item: any = await JobApplication.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ success: false, message: "Application not found" });
-  removePrivateUpload(item.resumePath); removePrivateUpload(item.paymentScreenshotPath); res.json({ success: true, message: "Application deleted" });
+  await removeStoredUpload(item.resumePath); await removeStoredUpload(item.paymentScreenshotPath); res.json({ success: true, message: "Application deleted" });
 });
 
 export default router;

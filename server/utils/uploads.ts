@@ -2,7 +2,10 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import multer from "multer";
-import type { Request } from "express";
+import mongoose from "mongoose";
+import { GridFSBucket, ObjectId } from "mongodb";
+import { pipeline } from "stream/promises";
+import type { Request, Response } from "express";
 
 const imageExtensions = new Map<string, string[]>([
   ["image/jpeg", [".jpg", ".jpeg"]],
@@ -122,6 +125,128 @@ export function uploadUrl(folder: string, filename: string) {
   return `/uploads/${folder}/${filename}`;
 }
 
+export type StoredUpload = {
+  url: string;
+  reference: string;
+  persistent: boolean;
+  id?: string;
+};
+
+function getGridFsBucket() {
+  // MongoDB GridFS keeps uploaded files with the same external database as the
+  // content records, so a fresh application deployment cannot remove them.
+  if (String(process.env.UPLOAD_STORAGE || "gridfs").toLowerCase() === "local") return null;
+  if (mongoose.connection.readyState !== 1 || !mongoose.connection.db) return null;
+  return new GridFSBucket(mongoose.connection.db, {
+    bucketName: process.env.GRIDFS_BUCKET || "terqivoUploads",
+  });
+}
+
+function removeTemporaryFile(file: Express.Multer.File) {
+  try {
+    if (file.path && fs.existsSync(file.path)) fs.unlinkSync(file.path);
+  } catch (error) {
+    console.warn("Could not remove temporary upload:", error);
+  }
+}
+
+/**
+ * Moves a Multer upload into durable storage when MongoDB is available.
+ * Local storage remains a development fallback and keeps old installations
+ * compatible; production startup requires MongoDB below.
+ */
+export async function persistUploadedFile(
+  file: Express.Multer.File,
+  folder: string,
+  visibility: "public" | "private" = "public",
+): Promise<StoredUpload> {
+  const bucket = getGridFsBucket();
+  if (!bucket) {
+    return {
+      url: visibility === "public" ? uploadUrl(folder, file.filename) : "",
+      reference: visibility === "private" ? `private/${folder}/${file.filename}` : uploadUrl(folder, file.filename),
+      persistent: false,
+    };
+  }
+
+  const uploadStream = bucket.openUploadStream(file.filename, {
+    metadata: {
+      folder,
+      visibility,
+      originalName: file.originalname,
+      contentType: file.mimetype,
+    },
+  });
+
+  try {
+    await pipeline(fs.createReadStream(file.path), uploadStream);
+  } catch (error) {
+    try {
+      await bucket.delete(uploadStream.id as ObjectId);
+    } catch {
+      // The upload may not have created a complete GridFS file yet.
+    }
+    throw error;
+  } finally {
+    removeTemporaryFile(file);
+  }
+
+  const id = String(uploadStream.id);
+  return {
+    url: visibility === "public" ? `/media/${id}` : "",
+    reference: visibility === "private" ? `private/gridfs/${id}` : `/media/${id}`,
+    persistent: true,
+    id,
+  };
+}
+
+function gridFsId(value: unknown) {
+  if (typeof value !== "string") return null;
+  const normalized = value.replace(/\\/g, "/").replace(/^\/+/, "");
+  const match = normalized.match(/^(?:media|private\/gridfs)\/([a-f0-9]{24})$/i);
+  return match && ObjectId.isValid(match[1]) ? new ObjectId(match[1]) : null;
+}
+
+export function parseGridFsReference(value: unknown) {
+  const id = gridFsId(value);
+  return id ? { id: id.toHexString() } : null;
+}
+
+/** Deletes a durable GridFS object or a legacy local upload. */
+export async function removeStoredUpload(value: unknown, folder?: string) {
+  const id = gridFsId(value);
+  if (id) {
+    const bucket = getGridFsBucket();
+    if (bucket) {
+      try {
+        await bucket.delete(id);
+      } catch (error) {
+        console.warn("Could not remove GridFS upload:", error);
+      }
+    }
+    return;
+  }
+  removeLocalUpload(value, folder);
+}
+
+/** Streams a GridFS object to an already-authorized response. */
+export async function sendStoredUpload(value: unknown, res: Response) {
+  const id = gridFsId(value);
+  const bucket = id ? getGridFsBucket() : null;
+  if (!id || !bucket) return false;
+
+  const file = await bucket.find({ _id: id }).next();
+  if (!file) return false;
+  const contentType = typeof file.metadata?.contentType === "string" ? file.metadata.contentType : "application/octet-stream";
+  res.type(contentType);
+  res.setHeader("Content-Length", String(file.length));
+  res.setHeader("Cache-Control", "private, max-age=3600");
+  bucket.openDownloadStream(id).on("error", () => {
+    if (!res.headersSent) res.status(404).end();
+  }).pipe(res);
+  return true;
+}
+
 function objectImageValue(value: unknown): unknown {
   if (!value || typeof value !== "object") return value;
   const candidate = value as Record<string, unknown>;
@@ -150,6 +275,7 @@ export function normalizeImagePath(value: unknown, folder = "general") {
 
   const clean = raw.replace(/^\/+/, "");
   if (!clean.includes("/") && !clean.includes("..")) return uploadUrl(folder, clean);
+  if (/^media\/[a-f0-9]{24}$/i.test(clean)) return `/${clean}`;
   if (clean.startsWith("uploads/") && !clean.includes("..")) {
     const parts = clean.split("/");
     if (parts[1] && uploadFolderAliases[parts[1]]) parts[1] = uploadFolderAliases[parts[1]];
@@ -170,12 +296,17 @@ export function isValidImageReference(value: unknown, folder = "general") {
       return false;
     }
   }
-  return normalized.startsWith("/uploads/");
+  if (normalized.startsWith("/media/")) return Boolean(gridFsId(normalized));
+  return normalized.startsWith("/uploads/") || normalized.startsWith("/media/");
 }
 
 export function isLocalUpload(value: unknown, folder?: string) {
   const normalized = normalizeImagePath(value, folder);
   return normalized.startsWith("/uploads/");
+}
+
+export function isPersistentUpload(value: unknown) {
+  return Boolean(gridFsId(value));
 }
 
 export function localUploadFilePath(value: unknown, folder?: string) {

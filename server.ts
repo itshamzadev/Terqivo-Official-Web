@@ -12,7 +12,7 @@ import bcrypt from "bcryptjs";
 
 import apiRoutes from "./server/routes/api";
 import { AdminUser } from "./server/models/AdminUser";
-import { getUploadsRoot } from "./server/utils/uploads";
+import { getUploadsRoot, sendStoredUpload } from "./server/utils/uploads";
 import { ensureDefaultEmailTemplates, verifyEmailTransport } from "./server/utils/emailService";
 
 dotenv.config();
@@ -64,6 +64,9 @@ async function connectDatabase(): Promise<void> {
     console.warn(
       "MONGODB_URI is not set. Server is running without a database connection.",
     );
+    if (isProduction) {
+      throw new Error("MONGODB_URI is required in production. Refusing to run with non-persistent content storage.");
+    }
     return;
   }
 
@@ -79,6 +82,7 @@ async function connectDatabase(): Promise<void> {
     }
   } catch (error) {
     console.error("MongoDB connection error:", error);
+    if (isProduction) throw error;
   }
 }
 
@@ -95,11 +99,11 @@ async function createApp(): Promise<express.Express> {
 
   // Health route ko API router se pehle bhi rakh sakte hain.
   app.get("/api/health", (_req: Request, res: Response) => {
-    res.status(200).json({
-      status: "ok",
+    const database = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    res.status(database === "connected" ? 200 : 503).json({
+      status: database === "connected" ? "ok" : "degraded",
       environment: process.env.NODE_ENV || "development",
-      database:
-        mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+      database,
     });
   });
 
@@ -112,6 +116,14 @@ async function createApp(): Promise<express.Express> {
   });
   app.use('/uploads/payment-screenshots', (_req: Request, res: Response) => {
     res.status(404).json({ success: false, message: 'Not found' });
+  });
+  app.get('/media/:id', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (await sendStoredUpload(`/media/${req.params.id}`, res)) return;
+      res.status(404).json({ success: false, message: 'Media not found' });
+    } catch (error) {
+      next(error);
+    }
   });
   app.use('/uploads', express.static(uploadsPath, { fallthrough: false, index: false }));
 
