@@ -94,7 +94,7 @@ export default function AdminWhatsAppSettings() {
       <div className={`rounded-xl border p-4 ${status?.configured ? "border-green-200 bg-green-50 text-green-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
         <p className="font-semibold">{status?.configured ? "WhatsApp is connected" : status?.provider === "web" ? `WhatsApp Web status: ${status?.connectionStatus || "starting"}` : "WhatsApp API still needs server credentials"}</p>
         <p className="text-sm mt-1">Provider: {status?.provider || "web"} · Recipient: {status?.recipient || "not configured"}</p>
-        {status?.provider === "web" && !status?.configured && <p className="text-sm mt-2">Open this page and scan the QR code below. The session is stored in MongoDB so it can survive redeploys.</p>}
+        {status?.provider === "web" && !status?.configured && <p className="text-sm mt-2">Open this page and scan the QR code using the business WhatsApp account <strong>03708121767</strong>. Alerts will be sent only to <strong>03470028168</strong>. The session is stored in MongoDB so it can survive redeploys.</p>}
         {status?.provider !== "web" && !status?.configured && <p className="text-sm mt-2">Set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID in the server environment. The token is never stored in this panel.</p>}
         {status?.lastError && <p className="text-sm mt-2 text-red-700">{status.lastError}</p>}
       </div>
