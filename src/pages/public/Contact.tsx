@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +7,7 @@ import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Mail, Phone, Globe, Send, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useSettings } from '../../components/SettingsContext';
+import { useAuth } from '../../components/auth/AuthContext';
 
 const contactSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -20,12 +21,14 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function Contact() {
   const { settings } = useSettings();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema)
   });
+  useEffect(() => { if (user) reset((values) => ({ ...values, fullName: user.name, email: user.email })); }, [user, reset]);
 
   const onSubmit = async (data: ContactFormValues) => {
     setIsSubmitting(true);

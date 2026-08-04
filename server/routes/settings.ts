@@ -22,6 +22,7 @@ router.get('/public', async (req, res) => {
         social: settings.social,
         courseContact: settings.courseContact,
         jobContact: settings.jobContact,
+        userAccess: settings.userAccess,
         email: {
           companyName: settings.email?.companyName,
           websiteUrl: settings.email?.websiteUrl,
@@ -60,6 +61,7 @@ const updateSettings = async (req: any, res: any) => {
     if (req.body.social) settings.social = { ...settings.social, ...req.body.social };
     if (req.body.courseContact) settings.courseContact = { ...settings.courseContact, ...req.body.courseContact };
     if (req.body.jobContact) settings.jobContact = { ...settings.jobContact, ...req.body.jobContact };
+    if (req.body.userAccess) settings.userAccess = { ...settings.userAccess, ...req.body.userAccess };
     if (req.body.email) {
       const allowed = ['emailEnabled', 'senderName', 'senderEmail', 'replyToEmail', 'adminNotificationEmail', 'companyName', 'companyLogo', 'websiteUrl', 'supportPhone', 'supportWhatsApp', 'emailFooterText', 'emailSignature', 'sendAdminNotifications', 'sendApplicantConfirmations', 'sendCourseEnrollmentEmails', 'sendJobApplicationEmails', 'sendContactFormEmails', 'sendPaymentStatusEmails'];
       const safeEmail = Object.fromEntries(Object.entries(req.body.email).filter(([key]) => allowed.includes(key)));

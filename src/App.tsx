@@ -44,6 +44,15 @@ import AdminPaymentAccounts from './pages/admin/AdminPaymentAccounts';
 import AdminEmailSettings from './pages/admin/AdminEmailSettings';
 import AdminEmailTemplates from './pages/admin/AdminEmailTemplates';
 import AdminEmailLogs from './pages/admin/AdminEmailLogs';
+import AdminUsers from './pages/admin/AdminUsers';
+import { AdminAuthProvider } from './components/auth/AdminAuthContext';
+import Login from './pages/public/Login';
+import Signup from './pages/public/Signup';
+import ForgotPassword from './pages/public/ForgotPassword';
+import ResetPassword from './pages/public/ResetPassword';
+import VerifyEmail from './pages/public/VerifyEmail';
+import Account from './pages/public/Account';
+import { RequireUser } from './components/auth/RequireUser';
 
 // Placeholder components for public routes
 const Placeholder = ({ title }: { title: string }) => (
@@ -56,6 +65,7 @@ const Placeholder = ({ title }: { title: string }) => (
 export default function App() {
   return (
     <AuthProvider>
+      <AdminAuthProvider>
       <SettingsProvider>
         <Router>
         <Routes>
@@ -77,6 +87,12 @@ export default function App() {
           <Route path="blog" element={<Blog />} />
           <Route path="blog/:slug" element={<BlogPostDetails />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="login" element={<Login />} />
+          <Route path="signup" element={<Signup />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
+          <Route path="verify-email" element={<VerifyEmail />} />
+          <Route path="account/*" element={<RequireUser><Account /></RequireUser>} />
           <Route path="privacy-policy" element={<PrivacyPolicy />} />
           <Route path="terms" element={<TermsConditions />} />
           <Route path="*" element={<NotFound />} />
@@ -102,11 +118,13 @@ export default function App() {
           <Route path="email-settings" element={<AdminEmailSettings />} />
           <Route path="email-templates" element={<AdminEmailTemplates />} />
           <Route path="email-logs" element={<AdminEmailLogs />} />
+          <Route path="users" element={<AdminUsers />} />
         </Route>
       </Routes>
     </Router>
         <Toaster position="top-right" richColors />
       </SettingsProvider>
+      </AdminAuthProvider>
       </AuthProvider>
   );
 }

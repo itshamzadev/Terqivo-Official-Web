@@ -10,6 +10,9 @@ import { authenticate } from "../middleware/auth";
 import { createPrivateApplicationUpload, parsePrivateUploadReference, privateUploadPath, removePrivateUpload, validateUploadedImage } from "../utils/uploads";
 import { sendTemplateEmail } from "../utils/emailService";
 import { createRateLimiter } from "../middleware/rateLimit";
+import { optionalUser, type AuthRequest } from "../middleware/auth";
+import { User } from "../models/User";
+import { SiteSettings } from "../models/SiteSettings";
 
 const router = Router();
 const applicationUpload = createPrivateApplicationUpload(10 * 1024 * 1024);
@@ -21,39 +24,41 @@ function field(value: unknown) { return typeof value === "string" ? value.trim()
 function bool(value: unknown) { return value === true || value === "true" || value === "1"; }
 
 async function sendApplicationEmails(item: any) {
-  const data = { applicantName: item.applicantName || item.name, email: item.email, phone: item.phone, jobTitle: item.jobTitleSnapshot, applicationNumber: item.applicationNumber, status: item.applicationStatus || item.status, paymentStatus: item.paymentStatus, amount: item.paymentAmountSnapshot, currency: item.currencySnapshot?.code || "", transactionId: item.transactionId, adminUrl: `${process.env.APP_URL || ""}/admin/applications` };
+  const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null; const recipient = linkedUser?.email || item.email;
+  const data = { applicantName: item.applicantName || item.name, email: recipient, phone: item.phone, jobTitle: item.jobTitleSnapshot, applicationNumber: item.applicationNumber, status: item.applicationStatus || item.status, paymentStatus: item.paymentStatus, amount: item.paymentAmountSnapshot, currency: item.currencySnapshot?.code || "", transactionId: item.transactionId, adminUrl: `${process.env.APP_URL || ""}/admin/applications` };
   const settingsEmail = (await import("../models/SiteSettings")).SiteSettings;
   const settings = await settingsEmail.getSettings();
   if (settings.email?.sendJobApplicationEmails === false) return;
-  const applicant = settings.email?.sendApplicantConfirmations === false ? { status: "skipped", message: "Applicant confirmations are disabled" } : await sendTemplateEmail({ to: item.email, templateKey: "job_application_received", data, relatedEntityType: "JobApplication", relatedEntityId: String(item._id), category: "job" });
+  const applicant = settings.email?.sendApplicantConfirmations === false ? { status: "skipped", message: "Applicant confirmations are disabled" } : await sendTemplateEmail({ to: recipient, templateKey: "job_application_received", data, relatedEntityType: "JobApplication", relatedEntityId: String(item._id), category: "job" });
   if (settings.email?.sendAdminNotifications !== false) {
     const adminEmail = settings.email?.adminNotificationEmail || process.env.ADMIN_NOTIFICATION_EMAIL || "support@terqivo.com";
     await sendTemplateEmail({ to: adminEmail, templateKey: "job_application_admin_notification", data, relatedEntityType: "JobApplication", relatedEntityId: String(item._id), category: "job" });
   }
   if (item.paymentStatus === "submitted") await sendApplicationEventEmail(item, "job_payment_received", data);
-  const entries = [applicant].filter((result) => result && result.status !== "skipped").map((result) => ({ recipient: item.email, templateKey: "job_application_received", subject: "Job application received", sentAt: new Date(), status: result.status, errorSummary: result.message || "" }));
+  const entries = [applicant].filter((result) => result && result.status !== "skipped").map((result) => ({ recipient, templateKey: "job_application_received", subject: "Job application received", sentAt: new Date(), status: result.status, errorSummary: result.message || "" }));
   if (entries.length) await JobApplication.updateOne({ _id: item._id }, { $push: { emailHistory: { $each: entries } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
 }
 
 async function sendApplicationEventEmail(item: any, templateKey: string, data: Record<string, unknown>, sentBy?: string) {
   const settings = await (await import("../models/SiteSettings")).SiteSettings.getSettings();
   if (templateKey.includes("payment") && settings.email?.sendPaymentStatusEmails === false) return { success: false, status: "skipped" as const, message: "Payment emails are disabled" };
-  const result = await sendTemplateEmail({ to: item.email, templateKey, data, relatedEntityType: "JobApplication", relatedEntityId: String(item._id), sentBy, category: templateKey.includes("payment") ? "payment" : "job" });
-  await JobApplication.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: templateKey, templateKey, recipient: item.email, sentAt: new Date(), sentBy, status: result.status, errorSummary: result.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
+  const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null; const recipient = linkedUser?.email || item.email;
+  const result = await sendTemplateEmail({ to: recipient, templateKey, data, relatedEntityType: "JobApplication", relatedEntityId: String(item._id), sentBy, category: templateKey.includes("payment") ? "payment" : "job" });
+  await JobApplication.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: templateKey, templateKey, recipient, sentAt: new Date(), sentBy, status: result.status, errorSummary: result.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
   return result;
 }
 
-router.post("/", createRateLimiter(5, 15 * 60 * 1000), (req, res, next) => {
+router.post("/", createRateLimiter(5, 15 * 60 * 1000), optionalUser, (req, res, next) => {
   applicationUpload.fields([{ name: "resume", maxCount: 1 }, { name: "paymentScreenshot", maxCount: 1 }])(req, res, (error) => {
     if (error) return res.status(400).json({ success: false, message: error.message });
     next();
   });
-}, async (req: any, res) => {
+}, async (req: AuthRequest & any, res) => {
   const files = (req.files || {}) as Record<string, Express.Multer.File[]>;
   const resume = files.resume?.[0];
   const screenshot = files.paymentScreenshot?.[0];
   const cleanupUploadedFiles = () => { if (resume) removePrivateUpload(`private/job-resumes/${resume.filename}`); if (screenshot) removePrivateUpload(`private/job-payment-screenshots/${screenshot.filename}`); };
-  const fail = (status: number, message: string) => { cleanupUploadedFiles(); return res.status(status).json({ success: false, message }); };
+  const fail = (status: number, message: string, code?: string) => { cleanupUploadedFiles(); return res.status(status).json({ success: false, ...(code ? { code } : {}), message }); };
   try {
     const jobId = field(req.body.jobId);
     if (!idIsValid(jobId)) return fail(400, "A valid job is required");
@@ -62,8 +67,11 @@ router.post("/", createRateLimiter(5, 15 * 60 * 1000), (req, res, next) => {
     if (job.applicationDeadline && new Date(job.applicationDeadline).getTime() < Date.now()) return fail(409, "The application deadline has passed");
     if (job.maxApplications && await JobApplication.countDocuments({ jobId }) >= job.maxApplications) return fail(409, "The maximum number of applications has been reached");
 
-    const applicantName = field(req.body.fullName || req.body.name);
-    const email = field(req.body.email).toLowerCase();
+    const settings = await SiteSettings.getSettings(); const accountUser: any = req.user?.kind === "user" ? await User.findById(req.user.id) : null;
+    if (settings.userAccess?.requireAccountForJobApplication && !accountUser) return fail(401, "Please log in before submitting a job application");
+    if (settings.userAccess?.requireVerifiedEmailForJobApplication && accountUser && !accountUser.emailVerified) return fail(403, "Please verify your email before continuing.", "EMAIL_VERIFICATION_REQUIRED");
+    const applicantName = accountUser?.name || field(req.body.fullName || req.body.name);
+    const email = accountUser?.email || field(req.body.email).toLowerCase();
     const phone = field(req.body.phone);
     if (applicantName.length < 2 || !emailIsValid(email) || phone.length < 5 || field(req.body.currentCity).length < 2 || field(req.body.coverLetter).length < 10) return fail(400, "Name, email, phone, city, and cover letter are required");
     if (!resume && !field(req.body.cvUrl)) return fail(400, "A resume upload or resume URL is required");
@@ -90,7 +98,7 @@ router.post("/", createRateLimiter(5, 15 * 60 * 1000), (req, res, next) => {
     const values = [account?.bankName, account?.accountNumber, account?.iban, account?.walletNumber].filter(Boolean).join(" | ");
     const paymentStatus = paymentSelected ? "submitted" : job.applicationFeeEnabled ? "unpaid" : "not-required";
     const item = await JobApplication.create({
-      applicationNumber: makeApplicationNumber(), jobId, jobTitleSnapshot: job.title, applicantName, name: applicantName, email, phone,
+      applicationNumber: makeApplicationNumber(), jobId, userId: accountUser?._id, jobTitleSnapshot: job.title, applicantName, applicantUsernameSnapshot: accountUser?.username || "", name: applicantName, email, phone,
       currentCity: field(req.body.currentCity), country: field(req.body.country), coverLetter: field(req.body.coverLetter), applicantMessage: field(req.body.applicantMessage),
       portfolioUrl: field(req.body.portfolioUrl), linkedInUrl: field(req.body.linkedInUrl), githubUrl: field(req.body.githubUrl), cvUrl: field(req.body.cvUrl),
       resumePath: resume ? `private/job-resumes/${path.basename(resume.filename)}` : "", paymentRequiredSnapshot: Boolean(job.applicationFeeEnabled && job.applicationFeeRequired), paymentAmountSnapshot: paymentSelected ? Number(job.applicationFeeAmount || 0) : 0,
@@ -174,8 +182,9 @@ router.post("/:id/custom-reply", authenticate, async (req: any, res) => {
   if (!idIsValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid application id" });
   const item: any = await JobApplication.findById(req.params.id); if (!item) return res.status(404).json({ success: false, message: "Application not found" });
   const message = field(req.body.message); if (!message) return res.status(400).json({ success: false, message: "Reply message is required" });
-  const result = await sendTemplateEmail({ to: item.email, templateKey: "job_application_custom_reply", data: { applicantName: item.applicantName || item.name, applicationNumber: item.applicationNumber, jobTitle: item.jobTitleSnapshot, adminReply: message }, relatedEntityType: "JobApplication", relatedEntityId: String(item._id), sentBy: req.user?.id, category: "job" });
-  item.applicantReply = message; item.emailHistory.push({ subject: "Reply from Terqivo", messageSummary: message.slice(0, 200), templateKey: "job_application_custom_reply", recipient: item.email, sentAt: new Date(), sentBy: req.user?.id, status: result.status, errorSummary: result.message || "" }); await item.save();
+  const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null; const recipient = linkedUser?.email || item.email;
+  const result = await sendTemplateEmail({ to: recipient, templateKey: "job_application_custom_reply", data: { applicantName: item.applicantName || item.name, applicationNumber: item.applicationNumber, jobTitle: item.jobTitleSnapshot, adminReply: message }, relatedEntityType: "JobApplication", relatedEntityId: String(item._id), sentBy: req.user?.id, category: "job" });
+  item.applicantReply = message; item.emailHistory.push({ subject: "Reply from Terqivo", messageSummary: message.slice(0, 200), templateKey: "job_application_custom_reply", recipient, sentAt: new Date(), sentBy: req.user?.id, status: result.status, errorSummary: result.message || "" }); await item.save();
   res.json({ success: result.success, message: result.success ? "Reply sent" : result.message || "Reply could not be sent", data: item });
 });
 

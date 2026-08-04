@@ -4,40 +4,50 @@ import { Course } from "../models/Course";
 import { Currency } from "../models/Currency";
 import { PaymentAccount } from "../models/PaymentAccount";
 import { CourseEnrollmentRequest } from "../models/CourseEnrollmentRequest";
-import { authenticate } from "../middleware/auth";
+import { authenticate, optionalUser, type AuthRequest } from "../middleware/auth";
 import { createPrivateUpload, parsePrivateUploadReference, privateUploadPath, localUploadFilePath, removePrivateUpload, removeLocalUpload, uploadUrl, validateUploadedImage } from "../utils/uploads";
 import { sendTemplateEmail } from "../utils/emailService";
+import { User } from "../models/User";
+import { SiteSettings } from "../models/SiteSettings";
 import crypto from "crypto";
 
 const router = Router();
 const screenshotUpload = createPrivateUpload("course-payment-screenshots", 5 * 1024 * 1024);
 const idIsValid = (id: string) => mongoose.isValidObjectId(id);
 
-router.post("/", (req, res, next) => {
+router.post("/", optionalUser, (req, res, next) => {
   screenshotUpload.single("paymentScreenshot")(req, res, (error) => {
     if (error) return res.status(400).json({ success: false, message: error.message });
     next();
   });
-}, async (req, res) => {
+}, async (req: AuthRequest, res) => {
+  const cleanup = () => { if (req.file) removePrivateUpload(`private/course-payment-screenshots/${req.file.filename}`); };
+  const fail = (status: number, message: string) => { cleanup(); return res.status(status).json({ success: false, message }); };
   try {
     const courseId = req.body.courseId || req.body.selectedCourse;
     const paymentAccountId = req.body.paymentAccountId || req.body.selectedPaymentAccount;
     const { fullName, email, phone, transactionId, message } = req.body;
-    if (!idIsValid(courseId) || !idIsValid(paymentAccountId)) return res.status(400).json({ success: false, message: "Course and payment account are required" });
-    if (!req.file) return res.status(400).json({ success: false, message: "Payment screenshot is required" });
+    const settings = await SiteSettings.getSettings();
+    const accountUser: any = req.user?.kind === "user" ? await User.findById(req.user.id) : null;
+    if (settings.userAccess?.requireAccountForCourseEnrollment && !accountUser) return fail(401, "Please log in before submitting a course enrollment request");
+    if (settings.userAccess?.requireVerifiedEmailForCourseEnrollment && accountUser && !accountUser.emailVerified) { cleanup(); return res.status(403).json({ success: false, code: "EMAIL_VERIFICATION_REQUIRED", message: "Please verify your email before continuing." }); }
+    const authoritativeName = accountUser?.name || String(fullName || "").trim();
+    const authoritativeEmail = accountUser?.email || String(email || "").trim().toLowerCase();
+    if (!idIsValid(courseId) || !idIsValid(paymentAccountId)) return fail(400, "Course and payment account are required");
+    if (!req.file) return fail(400, "Payment screenshot is required");
     if (!await validateUploadedImage(req.file)) {
       removePrivateUpload(`private/course-payment-screenshots/${req.file.filename}`);
-      return res.status(400).json({ success: false, message: "The payment screenshot is not a valid JPG, PNG, or WEBP image." });
+      return fail(400, "The payment screenshot is not a valid JPG, PNG, or WEBP image.");
     }
-    if (!fullName?.trim() || !/^\S+@\S+\.\S+$/.test(String(email)) || !phone?.trim()) return res.status(400).json({ success: false, message: "Name, email, and phone are required" });
+    if (!authoritativeName || !/^\S+@\S+\.\S+$/.test(authoritativeEmail) || !phone?.trim()) return fail(400, "Name, email, and phone are required");
 
     const [course, account] = await Promise.all([Course.findOne({ _id: courseId, $or: [{ published: true }, { published: { $exists: false }, status: { $in: ["active", "published"] } }] }), PaymentAccount.findOne({ _id: paymentAccountId, isActive: true })]);
-    if (!course) return res.status(404).json({ success: false, message: "Course not found or unavailable" });
-    if (!account) return res.status(404).json({ success: false, message: "Payment account is not active" });
-    if (account.requiresTransactionId && !transactionId?.trim()) return res.status(400).json({ success: false, message: "Transaction/reference number is required for this payment method" });
-    if (course.enrollmentStatus !== "open") return res.status(409).json({ success: false, message: "Enrollment is closed for this course" });
-    if (course.limitedSeats && course.remainingSeats !== undefined && course.remainingSeats <= 0) return res.status(409).json({ success: false, message: "No seats are currently available" });
-    if (await CourseEnrollmentRequest.exists({ courseId, email: String(email).trim().toLowerCase(), transactionId: String(transactionId).trim(), status: "pending" })) return res.status(409).json({ success: false, message: "This enrollment request has already been submitted" });
+    if (!course) return fail(404, "Course not found or unavailable");
+    if (!account) return fail(404, "Payment account is not active");
+    if (account.requiresTransactionId && !transactionId?.trim()) return fail(400, "Transaction/reference number is required for this payment method");
+    if (course.enrollmentStatus !== "open") return fail(409, "Enrollment is closed for this course");
+    if (course.limitedSeats && course.remainingSeats !== undefined && course.remainingSeats <= 0) return fail(409, "No seats are currently available");
+    if (await CourseEnrollmentRequest.exists({ courseId, email: authoritativeEmail, transactionId: String(transactionId).trim(), status: "pending" })) return fail(409, "This enrollment request has already been submitted");
 
     let currency: any = null;
     if (course.currencyId) currency = await Currency.findById(course.currencyId).lean();
@@ -45,7 +55,7 @@ router.post("/", (req, res, next) => {
     const paymentValues = [account.bankName, account.accountNumber, account.iban, account.walletNumber].filter(Boolean).join(" | ");
     const item = await CourseEnrollmentRequest.create({
       requestNumber: `ENR-${new Date().getFullYear()}-${crypto.randomBytes(5).toString("hex").toUpperCase()}`,
-      courseId, courseTitleSnapshot: course.title, applicantName: String(fullName).trim(), email: String(email).trim().toLowerCase(), phone: String(phone).trim(),
+      courseId, userId: accountUser?._id, courseTitleSnapshot: course.title, applicantName: authoritativeName, applicantNameSnapshot: authoritativeName, applicantEmailSnapshot: authoritativeEmail, applicantUsernameSnapshot: accountUser?.username || "", email: authoritativeEmail, phone: String(phone).trim(),
       paymentAccountId, paymentMethodSnapshot: account.paymentMethod, paymentAccountSnapshot: `${account.accountTitle}${paymentValues ? `: ${paymentValues}` : ""}`,
       amountSnapshot: course.salePrice ?? course.price ?? 0,
       currencySnapshot: currency ? { name: currency.name, code: currency.code, symbol: currency.symbol, prefix: currency.prefix, suffix: currency.suffix } : {},
@@ -60,17 +70,20 @@ router.post("/", (req, res, next) => {
 });
 
 async function notifyCourseRequest(item: any) {
+  const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null;
+  const recipient = linkedUser?.email || item.applicantEmailSnapshot || item.email;
   const data = { applicantName: item.applicantName, email: item.email, phone: item.phone, courseTitle: item.courseTitleSnapshot, requestNumber: item.requestNumber, amount: item.amountSnapshot, currency: item.currencySnapshot?.code || "", paymentMethod: item.paymentMethodSnapshot, transactionId: item.transactionId, status: item.status, adminUrl: `${process.env.APP_URL || ""}/admin/enrollments` };
   const settings = await (await import("../models/SiteSettings")).SiteSettings.getSettings();
   if (settings.email?.sendCourseEnrollmentEmails === false) return;
-  const applicant = await sendTemplateEmail({ to: item.email, templateKey: "course_enrollment_received", data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), category: "course" });
+  const applicant = await sendTemplateEmail({ to: recipient, templateKey: "course_enrollment_received", data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), category: "course" });
   if (settings.email?.sendAdminNotifications !== false) await sendTemplateEmail({ to: settings.email?.adminNotificationEmail || process.env.ADMIN_NOTIFICATION_EMAIL || "support@terqivo.com", templateKey: "course_enrollment_admin_notification", data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), category: "course" });
-  await CourseEnrollmentRequest.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: "Course enrollment received", templateKey: "course_enrollment_received", recipient: item.email, sentAt: new Date(), status: applicant.status, errorSummary: applicant.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
+  await CourseEnrollmentRequest.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: "Course enrollment received", templateKey: "course_enrollment_received", recipient, sentAt: new Date(), status: applicant.status, errorSummary: applicant.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
 }
 
 async function notifyCourseEvent(item: any, templateKey: string, data: Record<string, unknown>, sentBy?: string) {
-  const result = await sendTemplateEmail({ to: item.email, templateKey, data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), sentBy, category: templateKey.includes("payment") ? "payment" : "course" });
-  await CourseEnrollmentRequest.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: templateKey, templateKey, recipient: item.email, sentAt: new Date(), sentBy, status: result.status, errorSummary: result.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
+  const linkedUser: any = item.userId ? await User.findById(item.userId).lean() : null; const recipient = linkedUser?.email || item.applicantEmailSnapshot || item.email;
+  const result = await sendTemplateEmail({ to: recipient, templateKey, data, relatedEntityType: "CourseEnrollmentRequest", relatedEntityId: String(item._id), sentBy, category: templateKey.includes("payment") ? "payment" : "course" });
+  await CourseEnrollmentRequest.updateOne({ _id: item._id }, { $push: { emailHistory: { subject: templateKey, templateKey, recipient, sentAt: new Date(), sentBy, status: result.status, errorSummary: result.message || "" } }, $set: { lastEmailSentAt: new Date() } }).catch(() => undefined);
   return result;
 }
 

@@ -1,0 +1,6 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+interface AdminUser { id: string; name: string; email: string; role: string; }
+interface AdminAuth { user: AdminUser | null; isAuthenticated: boolean; isLoading: boolean; login: (user: AdminUser) => void; logout: () => Promise<void>; }
+const Context = createContext<AdminAuth | undefined>(undefined);
+export function AdminAuthProvider({ children }: { children: ReactNode }) { const [user, setUser] = useState<AdminUser | null>(null); const [isLoading, setIsLoading] = useState(true); useEffect(() => { fetch('/api/auth/me?type=admin').then(async (r) => { const data = await r.json(); if (r.ok && data.success) setUser(data.data.user); }).catch(() => undefined).finally(() => setIsLoading(false)); }, []); const logout = async () => { await fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'admin' }) }).catch(() => undefined); setUser(null); }; return <Context.Provider value={{ user, isAuthenticated: !!user, isLoading, login: setUser, logout }}>{children}</Context.Provider>; }
+export function useAdminAuth() { const context = useContext(Context); if (!context) throw new Error('useAdminAuth must be used within AdminAuthProvider'); return context; }

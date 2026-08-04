@@ -8,6 +8,8 @@ import { Input } from '@/src/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card';
 import { ArrowLeft, CheckCircle2, Copy } from 'lucide-react';
 import { formatPrice } from '@/src/lib/utils';
+import { useAuth } from '@/src/components/auth/AuthContext';
+import { useSettings } from '@/src/components/SettingsContext';
 
 const schema = z.object({
   fullName: z.string().min(2, 'Full name is required'), email: z.string().email('Invalid email address'), phone: z.string().min(5, 'Phone number is required'), currentCity: z.string().min(2, 'Current city is required'), country: z.string().optional(), coverLetter: z.string().min(10, 'Cover letter is required'), portfolioUrl: z.string().url('Enter a valid URL').or(z.literal('')).optional(), linkedInUrl: z.string().url('Enter a valid URL').or(z.literal('')).optional(), githubUrl: z.string().url('Enter a valid URL').or(z.literal('')).optional(), applicantMessage: z.string().optional(), paymentAccountId: z.string().optional(), transactionId: z.string().optional(), wantsToPay: z.boolean().optional(),
@@ -16,9 +18,11 @@ type Values = z.infer<typeof schema>;
 
 export default function JobApply() {
   const { slug } = useParams(); const [job, setJob] = useState<any>(null); const [accounts, setAccounts] = useState<any[]>([]); const [loading, setLoading] = useState(true); const [submitting, setSubmitting] = useState(false); const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle'); const [reference, setReference] = useState(''); const [serverError, setServerError] = useState('');
+  const { user } = useAuth(); const { settings } = useSettings();
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { wantsToPay: false } });
   const wantsToPay = watch('wantsToPay'); const paymentRequired = Boolean(job?.applicationFeeEnabled && job?.applicationFeeRequired); const paymentActive = Boolean(job?.applicationFeeEnabled && (paymentRequired || wantsToPay));
   const availableAccounts = useMemo(() => { const allowed = (job?.allowedPaymentAccountIds || []).map(String); return allowed.length ? accounts.filter((account) => allowed.includes(String(account._id))) : accounts; }, [accounts, job]);
+  useEffect(() => { if (user) reset((values) => ({ ...values, fullName: user.name, email: user.email })); }, [user, reset]);
 
   useEffect(() => { Promise.all([fetch(`/api/jobs/${slug}`).then((r) => r.json()), fetch('/api/payment-accounts/active').then((r) => r.json())]).then(([jobResult, accountResult]) => { setJob(jobResult.data || null); setAccounts(accountResult.data || []); }).catch(() => undefined).finally(() => setLoading(false)); }, [slug]);
 
@@ -31,6 +35,8 @@ export default function JobApply() {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!job) return <div className="container mx-auto px-4 py-20 text-center"><h1 className="text-3xl font-heading font-bold">Job Not Found</h1><Button className="mt-6" asChild><Link to="/jobs">Back to Careers</Link></Button></div>;
+  if (settings.userAccess?.requireAccountForJobApplication && !user) return <div className="container mx-auto px-4 py-20"><div className="max-w-xl mx-auto text-center border rounded-[24px] p-10"><h1 className="text-3xl font-heading font-bold mb-4">Log in to apply</h1><p className="text-muted-foreground mb-6">Use your Terqivo account to submit this job application.</p><Button asChild><Link to={`/login?returnTo=/jobs/${slug}/apply`}>Log in or Sign Up</Link></Button></div></div>;
+  if (settings.userAccess?.requireVerifiedEmailForJobApplication && user && !user.emailVerified) return <div className="container mx-auto px-4 py-20"><div className="max-w-xl mx-auto text-center border rounded-[24px] p-10"><h1 className="text-3xl font-heading font-bold mb-4">Verify your email first</h1><p className="text-muted-foreground mb-6">Please verify your account email before applying.</p><Button asChild><Link to="/account/security">Open Account Security</Link></Button></div></div>;
   if (status === 'success') return <div className="container mx-auto px-4 py-20"><div className="max-w-3xl mx-auto bg-green-50 border border-green-200 rounded-[24px] p-12 text-center"><CheckCircle2 className="mx-auto h-16 w-16 text-green-500 mb-6" /><h2 className="text-3xl font-heading font-bold text-green-900 mb-4">Application Submitted</h2><p className="text-green-800 mb-3">Your application is pending review.</p>{reference && <p className="font-semibold text-green-900 mb-8">Application reference: {reference}</p>}<Button asChild><Link to="/jobs">View Other Openings</Link></Button></div></div>;
 
   return <div className="container mx-auto px-4 py-20"><div className="max-w-3xl mx-auto"><Button variant="ghost" className="mb-6 -ml-4 text-muted-foreground" asChild><Link to={`/jobs/${slug}`}><ArrowLeft className="mr-2 h-4 w-4" /> Back to Job Details</Link></Button><div className="mb-10"><h1 className="text-4xl font-heading font-bold mb-2">Job Application</h1><p className="text-xl text-muted-foreground">Applying for: <span className="font-semibold text-foreground">{job.title}</span></p></div><Card><CardHeader><CardTitle>Submit Your Application</CardTitle><CardDescription>Please provide your information and resume. Your application remains pending until reviewed.</CardDescription></CardHeader><CardContent><form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

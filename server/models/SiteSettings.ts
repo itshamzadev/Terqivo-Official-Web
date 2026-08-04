@@ -52,6 +52,12 @@ const siteSettingsSchema = new mongoose.Schema({
     jobWhatsAppNumber: { type: String, default: '' },
     jobWhatsAppMessage: { type: String, default: 'Hello Terqivo, I want to discuss the {jobTitle} opportunity.' },
   },
+  userAccess: {
+    requireAccountForCourseEnrollment: { type: Boolean, default: true },
+    requireVerifiedEmailForCourseEnrollment: { type: Boolean, default: true },
+    requireAccountForJobApplication: { type: Boolean, default: false },
+    requireVerifiedEmailForJobApplication: { type: Boolean, default: false },
+  },
   email: {
     emailEnabled: { type: Boolean, default: true },
     senderName: { type: String, default: 'Terqivo Support' },

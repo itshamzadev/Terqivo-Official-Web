@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, UserCircle } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSettings } from '../SettingsContext';
+import { useAuth } from '../auth/AuthContext';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { settings } = useSettings();
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -101,6 +103,7 @@ export function Header() {
             
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-4">
+              {isAuthenticated ? <div className="flex items-center gap-2 text-sm"><UserCircle className="h-5 w-5 text-accent" /><Link to="/account" className="font-medium hover:text-accent">{user?.username || user?.name}</Link>{!user?.emailVerified && <span className="text-xs text-amber-600">Verify email</span>}<button onClick={() => void logout()} className="text-muted-foreground hover:text-destructive">Log out</button></div> : <div className="flex items-center gap-2"><Button variant="ghost" asChild><Link to="/login">Log in</Link></Button><Button variant="outline" asChild><Link to="/signup">Sign Up</Link></Button></div>}
               <Button variant="ghost" asChild className="hidden xl:inline-flex">
                  <Link to="/products">Explore Products</Link>
               </Button>
@@ -147,6 +150,7 @@ export function Header() {
                 ))}
               </nav>
               <div className="mt-auto pt-8 space-y-4">
+                {isAuthenticated ? <div className="space-y-3"><Button variant="outline" className="w-full h-14 text-lg" asChild><Link to="/account">Account{!user?.emailVerified ? ' · Verify email' : ''}</Link></Button><Button variant="ghost" className="w-full" onClick={() => void logout()}>Log out</Button></div> : <div className="grid grid-cols-2 gap-3"><Button variant="outline" className="h-12" asChild><Link to="/login">Log in</Link></Button><Button className="h-12" asChild><Link to="/signup">Sign Up</Link></Button></div>}
                 <Button className="w-full h-14 text-lg" asChild>
                   <Link to="/contact">Contact Us</Link>
                 </Button>

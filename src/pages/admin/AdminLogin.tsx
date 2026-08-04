@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { useAuth } from '../../components/auth/AuthContext';
+import { useAdminAuth } from '../../components/auth/AdminAuthContext';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,7 +19,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login } = useAdminAuth();
   const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({

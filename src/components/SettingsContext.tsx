@@ -52,6 +52,12 @@ export interface SiteSettings {
     jobWhatsAppNumber: string;
     jobWhatsAppMessage: string;
   };
+  userAccess: {
+    requireAccountForCourseEnrollment: boolean;
+    requireVerifiedEmailForCourseEnrollment: boolean;
+    requireAccountForJobApplication: boolean;
+    requireVerifiedEmailForJobApplication: boolean;
+  };
 }
 
 const defaultSettings: SiteSettings = {
@@ -100,6 +106,12 @@ const defaultSettings: SiteSettings = {
     jobWhatsAppEnabled: false,
     jobWhatsAppNumber: '',
     jobWhatsAppMessage: 'Hello Terqivo, I want to discuss the {jobTitle} opportunity.'
+  }
+  ,userAccess: {
+    requireAccountForCourseEnrollment: true,
+    requireVerifiedEmailForCourseEnrollment: true,
+    requireAccountForJobApplication: false,
+    requireVerifiedEmailForJobApplication: false,
   }
 };
 

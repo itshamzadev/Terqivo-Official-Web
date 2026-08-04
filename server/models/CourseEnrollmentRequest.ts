@@ -4,8 +4,12 @@ const courseEnrollmentRequestSchema = new mongoose.Schema(
   {
     requestNumber: { type: String, required: true, unique: true, index: true },
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
     courseTitleSnapshot: { type: String, required: true, trim: true },
     applicantName: { type: String, required: true, trim: true },
+    applicantNameSnapshot: { type: String, trim: true, default: "" },
+    applicantEmailSnapshot: { type: String, trim: true, lowercase: true, default: "" },
+    applicantUsernameSnapshot: { type: String, trim: true, lowercase: true, default: "" },
     email: { type: String, required: true, trim: true, lowercase: true },
     phone: { type: String, required: true, trim: true },
     paymentAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "PaymentAccount", required: true },

@@ -52,6 +52,12 @@ export default function AdminSettings() {
     jobWhatsAppNumber: '',
     jobWhatsAppMessage: 'Hello Terqivo, I want to discuss the {jobTitle} opportunity.'
   });
+  const [userAccess, setUserAccess] = useState({
+    requireAccountForCourseEnrollment: true,
+    requireVerifiedEmailForCourseEnrollment: true,
+    requireAccountForJobApplication: false,
+    requireVerifiedEmailForJobApplication: false,
+  });
 
   const [systemInfo, setSystemInfo] = useState({
     environment: 'production',
@@ -83,6 +89,7 @@ export default function AdminSettings() {
         if (data.social) setSocial(data.social);
         if (data.courseContact) setCourseContact(data.courseContact);
         if (data.jobContact) setJobContact(data.jobContact);
+        if (data.userAccess) setUserAccess(data.userAccess);
         if (data.updatedAt) setSystemInfo(prev => ({ ...prev, lastUpdated: new Date(data.updatedAt).toLocaleString() }));
       }
     } catch (error) {
@@ -204,6 +211,7 @@ export default function AdminSettings() {
     { id: 'social', label: 'Social Links', icon: Share2 },
     { id: 'courseContact', label: 'Course WhatsApp', icon: Globe },
     { id: 'jobContact', label: 'Job WhatsApp', icon: Globe },
+    { id: 'userAccess', label: 'User Access', icon: Settings },
     { id: 'system', label: 'System Info', icon: Server },
   ];
 
@@ -622,6 +630,14 @@ export default function AdminSettings() {
                 <input type="text" name="jobWhatsAppNumber" value={jobContact.jobWhatsAppNumber} onChange={(e) => handleChange('jobContact', setJobContact, e)} placeholder="+92 300 1234567" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
                 <textarea name="jobWhatsAppMessage" value={jobContact.jobWhatsAppMessage} onChange={(e) => handleChange('jobContact', setJobContact, e)} rows={4} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" /><p className="text-xs text-gray-500">Use {'{jobTitle}'} where the job title should be inserted.</p>
                 <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700"><button onClick={() => handleSave('jobContact', jobContact)} disabled={isSaving} className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"><Save className="w-4 h-4" /> Save Changes</button></div>
+              </div>
+            )}
+
+            {activeTab === 'userAccess' && (
+              <div className="space-y-6">
+                <div><h2 className="text-lg font-semibold text-gray-900 dark:text-white">Public user access</h2><p className="text-sm text-gray-500 dark:text-gray-400">Control whether accounts and verified email are required for submissions.</p></div>
+                {Object.entries(userAccess).map(([key, value]) => <label key={key} className="flex items-center gap-3 text-sm"><input type="checkbox" checked={Boolean(value)} onChange={(e) => setUserAccess((old) => ({ ...old, [key]: e.target.checked }))} /> {key}</label>)}
+                <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700"><button onClick={() => handleSave('userAccess', userAccess)} disabled={isSaving} className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"><Save className="w-4 h-4" /> Save Changes</button></div>
               </div>
             )}
 

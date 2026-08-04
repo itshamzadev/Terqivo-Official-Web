@@ -1,11 +1,11 @@
 import { Outlet, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { useAdminAuth } from '../auth/AdminAuthContext';
 import { LayoutDashboard, Package, Briefcase, GraduationCap, FileText, MessageSquare, Settings, LogOut, Users, FileSignature, UserCheck, Coins, WalletCards, Mail, MailOpen, ScrollText } from 'lucide-react';
 
 export function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isLoading, logout } = useAuth();
+  const { isAuthenticated, isLoading, logout } = useAdminAuth();
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-muted/20">Loading...</div>;
@@ -36,6 +36,7 @@ export function AdminLayout() {
     { name: 'Email Settings', path: '/admin/email-settings', icon: Mail },
     { name: 'Email Templates', path: '/admin/email-templates', icon: MailOpen },
     { name: 'Email Logs', path: '/admin/email-logs', icon: ScrollText },
+    { name: 'Public Users', path: '/admin/users', icon: Users },
   ];
 
   return (

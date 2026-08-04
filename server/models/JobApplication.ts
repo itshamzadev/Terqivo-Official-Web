@@ -2,10 +2,12 @@ import mongoose from 'mongoose';
 
 const jobApplicationSchema = new mongoose.Schema({
   jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
   name: { type: String, required: true },
   applicationNumber: { type: String, unique: true, sparse: true, index: true },
   jobTitleSnapshot: { type: String, trim: true, default: '' },
   applicantName: { type: String, trim: true, default: '' },
+  applicantUsernameSnapshot: { type: String, trim: true, lowercase: true, default: '' },
   email: { type: String, required: true },
   phone: { type: String, required: true },
   currentCity: { type: String, trim: true, default: '' },

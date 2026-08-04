@@ -6,16 +6,18 @@ import { SiteSettings } from '../models/SiteSettings';
 import { authenticate } from '../middleware/auth';
 import { sendTemplateEmail } from '../utils/emailService';
 import { createRateLimiter } from '../middleware/rateLimit';
+import { optionalUser, type AuthRequest } from '../middleware/auth';
+import { User } from '../models/User';
 
 const router = Router();
 const emailIsValid = (value: unknown) => typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 const clean = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 
-router.post('/', createRateLimiter(5, 15 * 60 * 1000), async (req, res) => {
+router.post('/', createRateLimiter(5, 15 * 60 * 1000), optionalUser, async (req: AuthRequest, res) => {
   try {
-    const fullName = clean(req.body.fullName || req.body.name); const email = clean(req.body.email).toLowerCase(); const subject = clean(req.body.subject); const message = clean(req.body.message);
+    const linkedUser: any = req.user?.kind === 'user' ? await User.findById(req.user.id) : null; const fullName = linkedUser?.name || clean(req.body.fullName || req.body.name); const email = linkedUser?.email || clean(req.body.email).toLowerCase(); const subject = clean(req.body.subject); const message = clean(req.body.message);
     if (fullName.length < 2 || !emailIsValid(email) || subject.length < 2 || message.length < 5) return res.status(400).json({ success: false, message: 'Name, valid email, subject, and message are required' });
-    const item = await ContactMessage.create({ fullName, email, phone: clean(req.body.phone), company: clean(req.body.company), subject, message, referenceNumber: `MSG-${new Date().getFullYear()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}` });
+    const item = await ContactMessage.create({ userId: linkedUser?._id, fullName, email, phone: clean(req.body.phone), company: clean(req.body.company), subject, message, referenceNumber: `MSG-${new Date().getFullYear()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}` });
     const settings = await SiteSettings.getSettings();
     if (settings.email?.sendContactFormEmails !== false) {
       void sendTemplateEmail({ to: email, templateKey: 'contact_message_received', data: { applicantName: fullName, subject, referenceNumber: item.referenceNumber }, relatedEntityType: 'ContactMessage', relatedEntityId: String(item._id), category: 'contact' }).catch(() => undefined);

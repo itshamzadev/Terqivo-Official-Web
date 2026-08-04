@@ -263,6 +263,15 @@ const templateDefinitions: Array<
     "Generic payment notification.",
     ["adminNote"],
   ],
+  ["user_signup_welcome", "Welcome user", "authentication", "Welcome to Terqivo, {{name}}", "Welcome message after signup.", ["name", "username", "email"]],
+  ["user_email_verification", "Verify user email", "authentication", "Verify your Terqivo email", "Email verification message.", ["name", "username", "email", "verificationUrl", "verificationCode", "expiresIn", "companyName", "supportEmail", "websiteUrl", "year"]],
+  ["user_email_verified", "Email verified", "authentication", "Your Terqivo email is verified", "Verification success message.", ["name", "username", "email", "companyName", "supportEmail", "websiteUrl", "year"]],
+  ["user_verification_resend", "Verification email resent", "authentication", "Verify your Terqivo email", "Resent verification message.", ["name", "username", "email", "verificationUrl", "verificationCode", "expiresIn", "companyName", "supportEmail", "websiteUrl", "year"]],
+  ["user_password_reset_request", "Password reset request", "authentication", "Reset your Terqivo password", "Password reset instructions.", ["name", "resetUrl", "expiresIn"]],
+  ["user_password_reset_success", "Password reset success", "authentication", "Your Terqivo password was reset", "Password reset success message.", ["name", "username"]],
+  ["user_password_changed", "Password changed", "authentication", "Your Terqivo password was changed", "Password change message.", ["name", "username"]],
+  ["user_account_suspended", "Account suspended", "authentication", "Your Terqivo account is suspended", "Account suspension notification.", ["name", "username"]],
+  ["user_account_reactivated", "Account reactivated", "authentication", "Your Terqivo account is active again", "Account reactivation notification.", ["name", "username"]],
 ];
 
 let transporter: Transporter | null = null;
@@ -292,7 +301,7 @@ export function renderTemplate(template: string, data: TemplateData) {
 function configuredTransporter() {
   if (transporter) return transporter;
 
-  const port = Number(process.env.SMTP_PORT || 587);
+  const port = Number(process.env.SMTP_PORT || 465);
 
   if (
     !process.env.SMTP_HOST ||
@@ -342,6 +351,11 @@ function safeError(error: unknown) {
   };
 }
 
+function redactSensitiveEmailContent(value: string, templateKey: string) {
+  if (!templateKey.startsWith("user_email_verification") && !templateKey.includes("verification") && !templateKey.startsWith("user_password_reset")) return value;
+  return value.replace(/([?&]token=)[^&\s"'<>]+/gi, "$1REDACTED").replace(/\b\d{6}\b/g, "[REDACTED_CODE]");
+}
+
 export async function ensureDefaultEmailTemplates() {
   for (const [
     key,
@@ -351,16 +365,31 @@ export async function ensureDefaultEmailTemplates() {
     description,
     variables,
   ] of templateDefinitions) {
-    const existing = await EmailTemplate.exists({ key });
-    if (existing) continue;
-    const body = `<p>Hello {{applicantName}},</p><p>{{body}}</p><p>Regards,<br>{{companyName}}</p>`;
+    const existing: any = await EmailTemplate.findOne({ key });
+    if (existing) {
+      const requiredVariables = variables.filter((variable) => !(existing.availableVariables || []).includes(variable));
+      if (["user_email_verification", "user_verification_resend"].includes(key) && (requiredVariables.length || !existing.htmlBody.includes("{{verificationCode}}") || !existing.textBody.includes("{{verificationCode}}"))) {
+        const verificationHtml = '<hr><h2>Verify your email address</h2><p>Use either the button or the 6-digit code below. This verification expires in {{expiresIn}}.</p><p style="text-align:center"><a href="{{verificationUrl}}" style="display:inline-block;background:#111827;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none">Verify your email</a></p><p style="font-size:28px;letter-spacing:8px;font-weight:700;text-align:center">{{verificationCode}}</p><p>If you did not create this account, you can safely ignore this email. Need help? Contact {{supportEmail}}.</p>';
+        const verificationText = '\n\nVerify your email address using either this link or the 6-digit code:\n{{verificationUrl}}\nCode: {{verificationCode}}\nThis expires in {{expiresIn}}. If you did not create this account, ignore this email. Support: {{supportEmail}}.';
+        await EmailTemplate.updateOne({ _id: existing._id }, { $addToSet: { availableVariables: { $each: requiredVariables } }, $set: { htmlBody: existing.htmlBody.includes("{{verificationCode}}") ? existing.htmlBody : `${existing.htmlBody}${verificationHtml}`, textBody: existing.textBody.includes("{{verificationCode}}") ? existing.textBody : `${existing.textBody}${verificationText}` } });
+      } else if (key === "user_email_verified" && (requiredVariables.length || !existing.htmlBody.includes("Email verified") || !existing.textBody.includes("Email verified"))) {
+        await EmailTemplate.updateOne({ _id: existing._id }, { $addToSet: { availableVariables: { $each: requiredVariables } }, $set: { htmlBody: existing.htmlBody.includes("Email verified") ? existing.htmlBody : `${existing.htmlBody}<p>Email verified successfully. Your account is ready. Visit {{websiteUrl}} or contact {{supportEmail}}.</p>`, textBody: existing.textBody.includes("Email verified") ? existing.textBody : `${existing.textBody}\n\nEmail verified successfully. Your account is ready. Visit {{websiteUrl}} or contact {{supportEmail}}.` } });
+      }
+      continue;
+    }
+    const authBody: Record<string, { html: string; text: string }> = {
+      user_email_verification: { html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto"><h1>Verify your email address</h1><p>Hello {{name}},</p><p>Verify the Terqivo account for <strong>{{username}}</strong> using either method below.</p><p style="text-align:center"><a href="{{verificationUrl}}" style="display:inline-block;background:#111827;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Verify your email</a></p><p style="font-size:28px;letter-spacing:8px;font-weight:700;text-align:center">{{verificationCode}}</p><p>This link and code expire in {{expiresIn}}.</p><p>If you did not create this account, ignore this email. Support: {{supportEmail}}</p></div>', text: 'Verify your email address\n\nHello {{name}},\n\nVerify using this link: {{verificationUrl}}\nOr enter this 6-digit code: {{verificationCode}}\nBoth expire in {{expiresIn}}. If you did not create this account, ignore this email. Support: {{supportEmail}}.' },
+      user_verification_resend: { html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto"><h1>Verify your email address</h1><p>Hello {{name}},</p><p>Your new verification code is:</p><p style="font-size:28px;letter-spacing:8px;font-weight:700;text-align:center">{{verificationCode}}</p><p><a href="{{verificationUrl}}">Verify your email</a></p><p>This expires in {{expiresIn}}. Support: {{supportEmail}}</p></div>', text: 'Verify your email address\n\nCode: {{verificationCode}}\nLink: {{verificationUrl}}\nExpires in {{expiresIn}}. Support: {{supportEmail}}.' },
+      user_password_reset_request: { html: '<p>Hello {{name}},</p><p>Reset your Terqivo password using the secure link below:</p><p><a href="{{resetUrl}}">Reset password</a></p><p>This link expires in {{expiresIn}}.</p>', text: 'Hello {{name}},\n\nReset your password: {{resetUrl}}\nThis link expires in {{expiresIn}}.' },
+    };
+    const body = authBody[key] || { html: `<p>Hello {{applicantName}},</p><p>{{body}}</p><p>Regards,<br>{{companyName}}</p>`, text: `Hello {{applicantName}},\n\n{{body}}\n\nRegards,\n{{companyName}}` };
     await EmailTemplate.create({
       key,
       name,
       category,
       subject,
-      htmlBody: body,
-      textBody: `Hello {{applicantName}},\n\n{{body}}\n\nRegards,\n{{companyName}}`,
+      htmlBody: body.html,
+      textBody: body.text,
       availableVariables: variables,
       description,
     });
@@ -415,6 +444,8 @@ export async function sendEmail(options: {
   sentBy?: string;
   recipientName?: string;
 }) {
+  const safeHtml = redactSensitiveEmailContent(options.html, options.templateKey || "");
+  const safeText = redactSensitiveEmailContent(options.text, options.templateKey || "");
   const logData = {
     recipient: options.to.trim(),
     recipientName: options.recipientName || "",
@@ -422,8 +453,8 @@ export async function sendEmail(options: {
     templateKey: options.templateKey || "",
     category: options.category || "",
     relatedEntityType: options.relatedEntityType || "",
-    htmlSnapshot: options.html,
-    textSnapshot: options.text,
+    htmlSnapshot: safeHtml,
+    textSnapshot: safeText,
     ...(options.relatedEntityId
       ? { relatedEntityId: options.relatedEntityId }
       : {}),
