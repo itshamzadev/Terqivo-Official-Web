@@ -10,49 +10,12 @@ export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden bg-background pt-20 pb-24 md:pt-28 md:pb-32">
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]" />
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <motion.div
           className="absolute -right-24 top-16 h-72 w-72 rounded-full bg-accent/10 blur-3xl"
           animate={shouldReduceMotion ? undefined : { scale: [1, 1.12, 1], x: [0, -18, 0], y: [0, 12, 0] }}
           transition={{ duration: 9, ease: 'easeInOut', repeat: Infinity }}
         />
-        <svg
-          className="absolute -right-8 top-0 h-full w-[78%] max-w-[920px] text-accent opacity-60 sm:-right-4 lg:right-0"
-          viewBox="0 0 900 620"
-          preserveAspectRatio="none"
-          fill="none"
-        >
-          <path
-            d="M-40 130C120 28 220 38 348 164c142 140 278 166 596-48"
-            className="stroke-current"
-            strokeWidth="1.4"
-            opacity="0.18"
-          />
-          <path
-            d="M-60 245c184-132 290-118 414 18 126 138 264 168 590-36"
-            className="stroke-current"
-            strokeWidth="1"
-            opacity="0.12"
-          />
-          <path
-            d="M40 520c152-94 232-90 342-8 126 94 236 66 470-114"
-            className="stroke-current"
-            strokeWidth="1.2"
-            opacity="0.15"
-          />
-          {!shouldReduceMotion && (
-            <motion.path
-              d="M-40 130C120 28 220 38 348 164c142 140 278 166 596-48"
-              className="stroke-current"
-              strokeWidth="2"
-              strokeLinecap="round"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: [0, 1, 1], opacity: [0, 0.7, 0.2] }}
-              transition={{ duration: 7, times: [0, 0.6, 1], ease: 'easeInOut', repeat: Infinity, repeatDelay: 2 }}
-            />
-          )}
-        </svg>
       </div>
       <div className="container relative mx-auto px-4 max-w-7xl">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">

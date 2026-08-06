@@ -55,9 +55,9 @@ export function ArticlesGrid({ articles, isLoading, hasError }: ArticlesGridProp
     <section id="dynamic-articles" className="py-24 bg-muted/10">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-12">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Latest Insights</h2>
+          <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">All Articles</h2>
           <p className="text-lg text-muted-foreground">
-            Explore recent publications from our engineering and design teams.
+            Explore all publications from our engineering and design teams.
           </p>
         </div>
 

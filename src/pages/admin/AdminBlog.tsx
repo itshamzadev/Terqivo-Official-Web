@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Upload } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Card, CardContent } from '@/src/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/src/components/ui/dialog';
 import { toast } from 'sonner';
+import { assetUrl, removeUnusedUpload } from '@/src/lib/utils';
+import { ProgressiveImage } from '@/src/components/ui/progressive-image';
 
 interface BlogPost {
   _id: string;
   title: string;
   slug: string;
+  coverImage?: string;
   category: string;
   author: string;
   status: 'published' | 'draft';
@@ -22,6 +25,9 @@ export default function AdminBlog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [coverImage, setCoverImage] = useState('');
+  const [savedCoverImage, setSavedCoverImage] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const { register, handleSubmit, reset, setValue } = useForm();
 
   const fetchPosts = async () => {
@@ -47,6 +53,8 @@ export default function AdminBlog() {
     Object.keys(post).forEach((key) => {
       setValue(key, (post as any)[key]);
     });
+    setCoverImage(post.coverImage || '');
+    setSavedCoverImage(post.coverImage || '');
     setIsOpen(true);
   };
 
@@ -55,11 +63,40 @@ export default function AdminBlog() {
     reset();
     setValue('status', 'draft');
     setValue('featured', false);
+    setCoverImage('');
+    setSavedCoverImage('');
     setIsOpen(true);
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      toast.error('Use a JPG, PNG, or WEBP image up to 5MB.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload?type=insight', { method: 'POST', body: formData });
+      const result = await res.json();
+      if (!res.ok || !result.success) throw new Error(result.message || 'Upload failed');
+      setCoverImage(result.data.url);
+      toast.success('Blog image uploaded');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      event.target.value = '';
+    }
   };
 
   const onSubmit = async (data: any) => {
     try {
+      data.coverImage = coverImage;
+      data.featured = Boolean(data.featured);
       if (!data.slug && data.title) {
         data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
       }
@@ -78,12 +115,15 @@ export default function AdminBlog() {
       if (res.ok && result.success) {
         setIsOpen(false);
         reset();
+        setSavedCoverImage(coverImage);
         fetchPosts();
         toast.success(editingId ? 'Post updated' : 'Post created');
       } else {
+        await removeUnusedUpload(coverImage, savedCoverImage);
         toast.error(result.message || 'An error occurred');
       }
     } catch (error: any) {
+      await removeUnusedUpload(coverImage, savedCoverImage);
       toast.error(error.message);
     }
   };
@@ -121,6 +161,30 @@ export default function AdminBlog() {
               <DialogTitle>{editingId ? 'Edit Post' : 'Add New Post'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Cover Image</label>
+                <div className="flex items-center gap-4">
+                  {coverImage ? (
+                    <ProgressiveImage
+                      src={assetUrl(coverImage, 'insights')}
+                      alt="Blog cover preview"
+                      frameClassName="h-20 w-32 rounded-md border"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-20 w-32 items-center justify-center rounded-md border bg-muted/30 text-xs text-muted-foreground">
+                      No image
+                    </div>
+                  )}
+                  <label className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm">
+                    <Upload className="h-4 w-4" />
+                    {isUploading ? 'Uploading...' : 'Upload image'}
+                    <input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={handleImageUpload} className="hidden" disabled={isUploading} />
+                  </label>
+                </div>
+                <Input value={coverImage} onChange={(event) => setCoverImage(event.target.value)} placeholder="Or paste an image URL" disabled={isUploading} />
+                <p className="text-xs text-muted-foreground">JPG, PNG, or WEBP up to 5MB.</p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Post Title</label>
@@ -194,6 +258,14 @@ export default function AdminBlog() {
                     <tr key={post._id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-2">
+                          {post.coverImage && (
+                            <ProgressiveImage
+                              src={assetUrl(post.coverImage, 'insights')}
+                              alt=""
+                              frameClassName="h-10 w-14 rounded"
+                              className="h-full w-full object-cover"
+                            />
+                          )}
                           <p className="font-medium text-foreground">{post.title}</p>
                           {post.featured && <span className="bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">Featured</span>}
                         </div>

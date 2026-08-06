@@ -34,7 +34,8 @@ export default function Blog() {
   }, []);
 
   const featuredArticle = articles.find(a => a.featured) || null;
-  const regularArticles = articles.filter(a => a._id !== featuredArticle?._id);
+  // Keep the featured article in the complete list as well as the featured section.
+  const regularArticles = articles;
 
   return (
     <div className="flex flex-col w-full">
