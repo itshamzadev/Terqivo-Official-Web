@@ -68,7 +68,7 @@ export default function BlogPostDetails() {
         <div className="container mx-auto px-4 max-w-4xl">
           <ManagedImage src={post.coverImage} alt={post.title} className="w-full aspect-[21/9] rounded-[24px] mb-12 object-cover border" fallback={<ImagePlaceholder title="Article Header Visual" className="w-full aspect-[21/9] rounded-[24px] mb-12" />} />
           
-          <div className="prose prose-lg prose-slate dark:prose-invert mx-auto">
+          <div className="prose prose-lg prose-slate mx-auto">
             <Markdown>{post.content || 'No content available.'}</Markdown>
           </div>
           

@@ -60,7 +60,7 @@ export default function CeoFounder() {
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
             <div className="lg:col-span-7 lg:col-start-6">
-              <div className="prose prose-lg prose-slate dark:prose-invert max-w-none">
+              <div className="prose prose-lg prose-slate max-w-none">
                 <h2 className="text-2xl md:text-3xl font-heading font-bold mb-6 text-foreground">About the Founder</h2>
                 <div className="space-y-6 text-muted-foreground leading-relaxed">
                   <p>

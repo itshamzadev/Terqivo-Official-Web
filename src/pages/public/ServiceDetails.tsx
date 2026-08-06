@@ -64,7 +64,7 @@ export default function ServiceDetails() {
             <div className="md:col-span-2 space-y-8">
               <div>
                 <h2 className="text-2xl font-heading font-bold mb-4">Overview</h2>
-                <div className="prose prose-slate dark:prose-invert max-w-none">
+                <div className="prose prose-slate max-w-none">
                   <Markdown>{service.fullDescription || 'No description is available for this solution.'}</Markdown>
                 </div>
               </div>

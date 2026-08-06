@@ -119,7 +119,7 @@ export default function ProductDetails() {
           <div className="space-y-12">
             <div>
               <h2 className="text-2xl font-heading font-bold mb-4">About this product</h2>
-              <div className="prose prose-slate dark:prose-invert max-w-none">
+              <div className="prose prose-slate max-w-none">
                 <Markdown>{product.description || 'No description is available for this product.'}</Markdown>
               </div>
             </div>

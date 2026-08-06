@@ -38,7 +38,7 @@ export default function PrivacyPolicy() {
       <section className="pt-10 pb-12 md:pb-16">
         <div className="container mx-auto px-4 max-w-[860px]">
           <Card className="border-none shadow-none bg-transparent">
-            <CardContent className="p-0 space-y-10 md:space-y-12 prose prose-slate dark:prose-invert max-w-none text-muted-foreground">
+            <CardContent className="p-0 space-y-10 md:space-y-12 prose prose-slate max-w-none text-muted-foreground">
               
               <div className="space-y-4">
                 <h2 className="text-[32px] font-heading font-bold text-foreground mb-4">1. Introduction</h2>
